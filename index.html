@@ -103,6 +103,19 @@
     @page{margin:10mm}
   }
 
+  /* Anleitung */
+  #helpOv{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:55;overflow:auto}
+  #helpOv.show{display:block}
+  #helpPanel{max-width:720px;margin:24px auto;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:20px 24px;line-height:1.55}
+  #helpPanel h3{margin:0 0 4px}
+  #helpPanel h4{margin:18px 0 6px;color:var(--acc)}
+  #helpPanel p{margin:6px 0;color:var(--txt)}
+  #helpPanel .k{background:var(--panel2);border:1px solid var(--line);border-radius:6px;
+    padding:1px 7px;font-size:12px;white-space:nowrap}
+  #helpPanel .dim{color:var(--dim);font-size:12px}
+  #helpClose{float:right}
+
   /* Notizen & Tags */
   #notesBar{display:none;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
   #notesBar.show{display:block}
@@ -208,6 +221,7 @@
       <button id="btnImport">Import</button>
       <button id="btnReset" class="warn" title="Alles auf die Standard-Plays zurücksetzen">Reset</button>
       <button id="btnLang" title="Sprache / Language">EN</button>
+      <button id="btnHelp" title="Anleitung">❓</button>
       <input type="file" id="fileIn" accept=".json" style="display:none">
     </div>
 
@@ -222,6 +236,9 @@
       <button id="btnDelPt" title="Entfernt den ausgewählten Punkt">– Punkt</button>
       <button id="btnAddLine" title="Neue Linie ab dem ausgewählten Punkt – so entstehen Abzweigungen/Options-Routen">+ Abzweig</button>
       <button id="btnDelLine" class="warn" title="Löscht die Linie des ausgewählten Punkts">Linie löschen</button>
+      <div class="sep"></div>
+      <label class="lbl" id="lblLbl">Name:</label>
+      <input type="text" id="lblIn" maxlength="3" style="width:52px;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:6px 8px" disabled>
       <div class="sep"></div>
       <button id="btnDash">Gestrichelt</button>
       <select id="endSel">
@@ -278,8 +295,10 @@
         <option value="3x2">6 (3×2)</option>
         <option value="4x2">8 (4×2)</option>
         <option value="4x3">12 (4×3)</option>
+        <option value="5x3">15 (5×3)</option>
+        <option value="4x4">16 (4×4)</option>
       </select>
-      <label id="prCountLbl">→ 3 Fenster = <span id="prCount"></span> Plays (in Listen-Reihenfolge)</label>
+      <label id="prCountLbl"></label>
     </div>
     <div class="pRow">
       <label id="prTeamLbl">Team:</label><input type="text" id="prTeam" style="width:130px">
@@ -296,6 +315,12 @@
   </div>
 </div>
 <div id="printArea"></div>
+<div id="helpOv">
+  <div id="helpPanel">
+    <button id="helpClose">✕</button>
+    <div id="helpContent"></div>
+  </div>
+</div>
 <div id="gdOv">
   <div id="gdHead">
     <button id="gdExit">✕</button>
@@ -368,7 +393,7 @@ de:{
   tSlotDup:'Slot duplizieren', tSlotDel:'Slot löschen',
   prTitle:'🖨 QB-Wristband drucken', sizeLbl:'Größe:',
   large:'Groß (127 × 76 mm)', small:'Klein (102 × 60 mm)', mmLbl:'mm pro Fenster (anpassbar)',
-  perWin:'Plays pro Fenster:', winEq:'→ 3 Fenster = ', winEq2:' Plays (in Listen-Reihenfolge)',
+  perWin:'Plays pro Fenster:', winInfo:'→ {w} Fenster · {n} Plays (in Listen-Reihenfolge)',
   teamLbl:'Team:', printLogo:'Logo drucken', chooseLogo:'Logo wählen…', rmLogo:'Logo entfernen',
   close:'Schließen', doPrint:'🖨 Drucken', window:'Fenster',
   newSlotPrompt:'Name des neuen Slots:', gameplan:'Gameplan', renSlot:'Slot umbenennen:',
@@ -388,7 +413,8 @@ de:{
   shareLoadQ:'Geteiltes Playbook "{n}" als neuen Slot laden?', shared:'Geteilt',
   gameday:'🏟 Gameday', gdReset:'Statistik zurücksetzen', gdResetQ:'Alle Play-Statistiken zurücksetzen?',
   gdBack:'← Alle Plays', layoutLbl:'Layout:', layWrist:'Wristband (3 Fenster)',
-  layA4:'A4-Playbook (1 Play/Seite)', forLbl:'Für:', forAll:'QB (alle Routen)', printDef:'Defense mitdrucken'
+  layA4:'A4-Playbook (1 Play/Seite)', forLbl:'Für:', forAll:'QB (alle Routen)', printDef:'Defense mitdrucken',
+  nameLbl:'Name:', nameT:'Bezeichnung des ausgewählten Spielers (Offense oder Defense, max. 3 Zeichen)'
 },
 en:{
   newBtn:'+ New', dupBtn:'Duplicate', delBtn:'Delete',
@@ -409,7 +435,7 @@ en:{
   tSlotDup:'Duplicate slot', tSlotDel:'Delete slot',
   prTitle:'🖨 Print QB wristband', sizeLbl:'Size:',
   large:'Large (127 × 76 mm)', small:'Small (102 × 60 mm)', mmLbl:'mm per window (adjustable)',
-  perWin:'Plays per window:', winEq:'→ 3 windows = ', winEq2:' plays (in list order)',
+  perWin:'Plays per window:', winInfo:'→ {w} windows · {n} plays (in list order)',
   teamLbl:'Team:', printLogo:'Print logo', chooseLogo:'Choose logo…', rmLogo:'Remove logo',
   close:'Close', doPrint:'🖨 Print', window:'Window',
   newSlotPrompt:'Name of the new slot:', gameplan:'Game plan', renSlot:'Rename slot:',
@@ -429,7 +455,8 @@ en:{
   shareLoadQ:'Load shared playbook "{n}" as a new slot?', shared:'Shared',
   gameday:'🏟 Game day', gdReset:'Reset stats', gdResetQ:'Reset all play stats?',
   gdBack:'← All plays', layoutLbl:'Layout:', layWrist:'Wristband (3 windows)',
-  layA4:'A4 playbook (1 play/page)', forLbl:'For:', forAll:'QB (all routes)', printDef:'Include defense'
+  layA4:'A4 playbook (1 play/page)', forLbl:'For:', forAll:'QB (all routes)', printDef:'Include defense',
+  nameLbl:'Name:', nameT:'Label of the selected player (offense or defense, max. 3 characters)'
 }};
 function T(k){ return (I18N[state.lang]||I18N.de)[k] || I18N.de[k] || k; }
 function applyLang(){
@@ -456,7 +483,6 @@ function applyLang(){
   document.querySelector('#prSize option[value="gross"]').textContent = T('large');
   document.querySelector('#prSize option[value="klein"]').textContent = T('small');
   t('prMmLbl',T('mmLbl')); t('prGridLbl',T('perWin'));
-  document.getElementById('prCountLbl').innerHTML = esc(T('winEq')) + '<span id="prCount"></span>' + esc(T('winEq2'));
   t('prTeamLbl',T('teamLbl')); t('prLogoTxt',T('printLogo'));
   t('prLogoUp',T('chooseLogo')); t('prLogoRm',T('rmLogo'));
   t('prClose',T('close')); t('prGo',T('doPrint'));
@@ -471,17 +497,22 @@ function applyLang(){
   document.querySelector('#prLay option[value="a4"]').textContent = T('layA4');
   document.querySelector('#prPos option[value="all"]').textContent = T('forAll');
   document.getElementById('btnLang').textContent = state.lang==='de' ? 'EN' : 'DE';
+  ti('btnHelp', state.lang==='de' ? 'Anleitung' : 'Guide');
+  t('lblLbl',T('nameLbl')); ti('lblIn',T('nameT'));
+  if(document.getElementById('helpOv').classList.contains('show')) renderHelp();
 }
 
 /* ================= State (mit benennbaren Speicher-Slots) ================= */
 const LS_KEY = 'rhinosPlaybook_v1';
 function freshSlot(name){
   return {name, plays: JSON.parse(JSON.stringify(DEFAULT_PLAYS)),
-    def:{preset:'off', players:[], zones:true, v:DEF_V}, cur:0};
+    def:{preset:'off', players:[], zones:true, v:DEF_V}, cur:0,
+    labels:{X:'X',Y:'Y',C:'C',Z:'Z',Q:'Q'}};
 }
+function LBL(pid){ return (SLOT().labels && SLOT().labels[pid]) || pid; }
 let state = {
   slots: [freshSlot('Playbook 1')], slot: 0,
-  mode: 'view', selP: null, selH: null,          // selH = {li, pi}
+  mode: 'view', selP: null, selH: null, selD: null,   // selH = {li, pi}, selD = Defense-Index
   logo: null, teamName: 'Rhinos', lang: 'de',
   snap: true, tagFilter: '', showNotes: false,
   print: {preset:'gross', w:127, h:76, grid:'4x2', logo:true, layout:'wrist', pos:'all', def:false}
@@ -508,6 +539,7 @@ try{
         sl.def.players = JSON.parse(JSON.stringify(DEF_PRESETS[sl.def.preset]));
       sl.def.v = DEF_V;
       if(sl.cur==null || sl.cur>=sl.plays.length) sl.cur = 0;
+      if(!sl.labels) sl.labels = {X:'X',Y:'Y',C:'C',Z:'Z',Q:'Q'};
     }
   }
 }catch(e){}
@@ -522,7 +554,7 @@ function save(){
 
 /* ================= Undo / Redo & Einrasten ================= */
 let undoStack = [], redoStack = [];
-function snapshot(){ return JSON.stringify({plays:SLOT().plays, def:SLOT().def, cur:SLOT().cur}); }
+function snapshot(){ return JSON.stringify({plays:SLOT().plays, def:SLOT().def, cur:SLOT().cur, labels:SLOT().labels}); }
 function pushUndo(){
   const sn = snapshot();
   if(undoStack[undoStack.length-1]===sn) return;
@@ -533,7 +565,8 @@ function clearUndo(){ undoStack.length=0; redoStack.length=0; }
 function applySnapshot(sn){
   const d = JSON.parse(sn);
   SLOT().plays = d.plays; SLOT().def = d.def; SLOT().cur = Math.min(d.cur, d.plays.length-1);
-  state.selP=null; state.selH=null; render(); save();
+  if(d.labels) SLOT().labels = d.labels;
+  state.selP=null; state.selH=null; state.selD=null; render(); save();
 }
 function doUndo(){ if(!undoStack.length) return; redoStack.push(snapshot()); applySnapshot(undoStack.pop()); }
 function doRedo(){ if(!redoStack.length) return; undoStack.push(snapshot()); applySnapshot(redoStack.pop()); }
@@ -614,11 +647,12 @@ function render(){
     const cx=FX(x), cy=FY(y), col=COLORS[pid];
     const sel = (state.mode==='edit' && state.selP===pid);
     const ring = sel ? `stroke="#1668c9" stroke-width="4"` : `stroke="#fff" stroke-width="2.5"`;
+    const lb = LBL(pid), lfs = lb.length>1 ? 9.5 : 14, ldy = lb.length>1 ? 3.5 : 5;
     if(pid==='C')
       s += `<rect data-op="${pid}" x="${cx-13}" y="${cy-13}" width="26" height="26" rx="5" fill="${col}" ${ring} style="cursor:grab"/>`;
     else
       s += `<circle data-op="${pid}" cx="${cx}" cy="${cy}" r="14" fill="${col}" ${ring} style="cursor:grab"/>`;
-    s += `<text x="${cx}" y="${cy+5}" font-size="14" font-weight="bold" fill="#fff" text-anchor="middle" pointer-events="none">${pid==='C'?'C':pid}</text>`;
+    s += `<text x="${cx}" y="${cy+ldy}" font-size="${lfs}" font-weight="bold" fill="#fff" text-anchor="middle" pointer-events="none">${esc(lb)}</text>`;
   }
 
   // ---- Editor-Handles ----
@@ -638,9 +672,10 @@ function render(){
     D.players.forEach((d,di)=>{
       const cx=FX(d.x), cy=FY(d.y);
       const fs = d.l.length>1 ? 10 : 13, dy = d.l.length>1 ? 3.5 : 5;
+      const dSel = state.mode==='edit' && state.selD===di;
       s += `<g data-dp="${di}" style="cursor:grab">
-        <rect x="${cx-13}" y="${cy-13}" width="26" height="26" rx="4" fill="#c62828" stroke="#fff" stroke-width="2.5" transform="rotate(45 ${cx} ${cy})"/>
-        <text x="${cx}" y="${cy+dy}" font-size="${fs}" font-weight="bold" fill="#fff" text-anchor="middle" pointer-events="none">${d.l}</text></g>`;
+        <rect x="${cx-13}" y="${cy-13}" width="26" height="26" rx="4" fill="#c62828" stroke="${dSel?'#1668c9':'#fff'}" stroke-width="${dSel?4:2.5}" transform="rotate(45 ${cx} ${cy})"/>
+        <text x="${cx}" y="${cy+dy}" font-size="${fs}" font-weight="bold" fill="#fff" text-anchor="middle" pointer-events="none">${esc(d.l)}</text></g>`;
     });
   }
 
@@ -685,7 +720,7 @@ function renderSidebar(){
   list.querySelectorAll('.pItem').forEach(el=>{
     el.onclick = ev=>{
       if(ev.target.dataset && ev.target.dataset.mv){ movePlay(+el.dataset.i, +ev.target.dataset.mv); return; }
-      SLOT().cur = +el.dataset.i; state.selP=null; state.selH=null; render(); save();
+      SLOT().cur = +el.dataset.i; state.selP=null; state.selH=null; state.selD=null; render(); save();
       document.getElementById('side').classList.remove('open');
     };
     el.ondragstart = ev=>ev.dataTransfer.setData('text/plain', el.dataset.i);
@@ -733,14 +768,38 @@ function renderEditBar(){
   const bar = document.getElementById('editBar');
   bar.classList.toggle('show', state.mode==='edit');
   const info = document.getElementById('selInfo');
-  if(!state.selP){ info.textContent = T('tapPlayer'); return; }
-  let t = T('player') + ' ' + state.selP;
-  if(state.selH) t += ' · ' + T('point') + ' ' + (state.selH.pi+1) + ' (' + T('line') + ' ' + (lineIndexOfSel()+1) + ')';
-  info.textContent = t;
+  const lblIn = document.getElementById('lblIn');
+  if(state.selP){
+    let t = T('player') + ' ' + LBL(state.selP);
+    if(state.selH) t += ' · ' + T('point') + ' ' + (state.selH.pi+1) + ' (' + T('line') + ' ' + (lineIndexOfSel()+1) + ')';
+    info.textContent = t;
+    lblIn.disabled = false;
+    if(document.activeElement!==lblIn) lblIn.value = LBL(state.selP);
+  } else if(state.selD!=null && DEF().players[state.selD]){
+    info.textContent = 'Defense · ' + DEF().players[state.selD].l;
+    lblIn.disabled = false;
+    if(document.activeElement!==lblIn) lblIn.value = DEF().players[state.selD].l;
+  } else {
+    info.textContent = T('tapPlayer');
+    lblIn.disabled = true;
+    if(document.activeElement!==lblIn) lblIn.value = '';
+  }
   const ln = activeLine();
   document.getElementById('btnDash').classList.toggle('on', !!(ln && ln.d));
   if(ln) document.getElementById('endSel').value = ln.e;
 }
+document.getElementById('lblIn').oninput = ev=>{
+  const v = ev.target.value.trim();
+  if(state.selP){
+    if(!SLOT().labels) SLOT().labels = {X:'X',Y:'Y',C:'C',Z:'Z',Q:'Q'};
+    SLOT().labels[state.selP] = v || state.selP;
+  } else if(state.selD!=null && DEF().players[state.selD]){
+    DEF().players[state.selD].l = v || '?';
+  } else return;
+  save();
+  // Feld neu zeichnen, ohne den Fokus im Eingabefeld zu verlieren
+  requestRender();
+};
 function playerLines(pid){ return SLOT().plays[SLOT().cur].lines.filter(l=>l.p===pid); }
 function activeLine(){
   const play = SLOT().plays[SLOT().cur];
@@ -776,15 +835,16 @@ function bindField(){
     } else if(t.dataset.op){                                       // Offense-Spieler
       const pid = t.dataset.op;
       if(state.mode==='edit'){
-        if(state.selP!==pid){ state.selP=pid; state.selH=null; }
+        if(state.selP!==pid){ state.selP=pid; state.selH=null; state.selD=null; }
         drag = {type:'o', pid, start:svgPoint(ev), pos0:play.pos[pid].slice(),
                 lines0: play.lines.map(l=> l.p===pid ? l.pts.map(p=>p.slice()) : null)};
       }
     } else if(t.closest && t.closest('[data-dp]')){                // Defense
       const di = +t.closest('[data-dp]').dataset.dp;
+      if(state.mode==='edit'){ state.selD=di; state.selP=null; state.selH=null; }
       drag = {type:'d', di};
     } else {
-      if(state.mode==='edit'){ state.selP=null; state.selH=null; }
+      if(state.mode==='edit'){ state.selP=null; state.selH=null; state.selD=null; }
       drag = null;
     }
     if(drag){ pushUndo(); svg.setPointerCapture(ev.pointerId); ev.preventDefault(); }
@@ -820,10 +880,10 @@ function requestRender(){
 
 /* ================= Toolbar-Aktionen ================= */
 document.getElementById('burger').onclick = ()=>document.getElementById('side').classList.toggle('open');
-document.getElementById('btnPrev').onclick = ()=>{ SLOT().cur=(SLOT().cur-1+SLOT().plays.length)%SLOT().plays.length; state.selP=null; state.selH=null; render(); save(); };
-document.getElementById('btnNext').onclick = ()=>{ SLOT().cur=(SLOT().cur+1)%SLOT().plays.length; state.selP=null; state.selH=null; render(); save(); };
+document.getElementById('btnPrev').onclick = ()=>{ SLOT().cur=(SLOT().cur-1+SLOT().plays.length)%SLOT().plays.length; state.selP=null; state.selH=null; state.selD=null; render(); save(); };
+document.getElementById('btnNext').onclick = ()=>{ SLOT().cur=(SLOT().cur+1)%SLOT().plays.length; state.selP=null; state.selH=null; state.selD=null; render(); save(); };
 document.getElementById('playName').oninput = ev=>{ SLOT().plays[SLOT().cur].name = ev.target.value; renderSidebar(); save(); };
-document.getElementById('btnMode').onclick = ()=>{ state.mode = state.mode==='edit'?'view':'edit'; state.selP=null; state.selH=null; render(); };
+document.getElementById('btnMode').onclick = ()=>{ state.mode = state.mode==='edit'?'view':'edit'; state.selP=null; state.selH=null; state.selD=null; render(); };
 document.getElementById('defSel').onchange = ev=>{
   pushUndo();
   const v = ev.target.value, D = DEF();
@@ -954,7 +1014,7 @@ document.getElementById('btnReset').onclick = ()=>{
   if(!confirm(T('resetQ'))) return;
   pushUndo();
   SLOT().plays = JSON.parse(JSON.stringify(DEFAULT_PLAYS));
-  SLOT().cur=0; state.selP=null; state.selH=null; render(); save();
+  SLOT().cur=0; state.selP=null; state.selH=null; state.selD=null; render(); save();
 };
 
 /* ================= Animation ================= */
@@ -993,13 +1053,13 @@ document.getElementById('btnAnim').onclick = ()=>{
 
 /* ================= Speicher-Slots ================= */
 document.getElementById('slotSel').onchange = ev=>{
-  state.slot = +ev.target.value; state.selP=null; state.selH=null; clearUndo(); render(); save();
+  state.slot = +ev.target.value; state.selP=null; state.selH=null; state.selD=null; clearUndo(); render(); save();
 };
 document.getElementById('slotNew').onclick = ()=>{
   const name = prompt(T('newSlotPrompt'), T('gameplan')+' '+(state.slots.length+1));
   if(!name) return;
   state.slots.push(freshSlot(name)); state.slot = state.slots.length-1;
-  state.selP=null; state.selH=null; clearUndo(); render(); save();
+  state.selP=null; state.selH=null; state.selD=null; clearUndo(); render(); save();
 };
 document.getElementById('slotRen').onclick = ()=>{
   const name = prompt(T('renSlot'), SLOT().name);
@@ -1016,7 +1076,7 @@ document.getElementById('slotDel').onclick = ()=>{
   if(state.slots.length<=1){ alert(T('lastSlot')); return; }
   if(!confirm(T('delSlotQ').replace('{n}', SLOT().name))) return;
   state.slots.splice(state.slot,1); state.slot = Math.min(state.slot, state.slots.length-1);
-  state.selP=null; state.selH=null; clearUndo(); render(); save();
+  state.selP=null; state.selH=null; state.selD=null; clearUndo(); render(); save();
 };
 
 /* ================= Wristband-Druck ================= */
@@ -1042,7 +1102,8 @@ function playThumbSVG(play, num, hl){
     const fill = (hl && pid!==hl) ? '#c3c9ce' : COLORS[pid];
     if(pid==='C') s += `<rect x="${cx-7}" y="${cy-7}" width="14" height="14" rx="3" fill="${fill}"/>`;
     else s += `<circle cx="${cx}" cy="${cy}" r="8" fill="${fill}"/>`;
-    s += `<text x="${cx}" y="${cy+3}" font-size="8.5" font-weight="bold" fill="#fff" text-anchor="middle">${pid}</text>`;
+    const lb = LBL(pid);
+    s += `<text x="${cx}" y="${cy+3}" font-size="${lb.length>1?6:8.5}" font-weight="bold" fill="#fff" text-anchor="middle">${esc(lb)}</text>`;
   }
   s += `<rect x="3" y="3" width="22" height="14" rx="7" fill="#000"/>
     <text x="14" y="14" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">${num}</text>`;
@@ -1054,16 +1115,17 @@ function gridDims(){ const [c,r] = state.print.grid.split('x').map(Number); retu
 function buildCards(){
   const [cols,rows] = gridDims(), per = cols*rows;
   const hl = state.print.pos==='all' ? null : state.print.pos;
-  const plays = SLOT().plays.slice(0, per*3);
+  const plays = SLOT().plays;
+  const cards = Math.max(1, Math.ceil(plays.length/per));
   let html = '';
-  for(let w=0; w<3; w++){
+  for(let w=0; w<cards; w++){
     const chunk = plays.slice(w*per, (w+1)*per);
     if(!chunk.length) break;
     let cells = chunk.map((p,i)=>`<div class="cell">${playThumbSVG(p, w*per+i+1, hl)}</div>`).join('');
     for(let i=chunk.length; i<per; i++) cells += '<div class="cell"></div>';
     const logo = (state.print.logo && state.logo) ? `<img src="${state.logo}">` : '';
     html += `<div class="wcard" style="width:${state.print.w}mm;height:${state.print.h}mm">
-      <div class="wcHead">${logo}<span class="t">${esc(state.teamName)}${hl?' · '+hl:''}</span>
+      <div class="wcHead">${logo}<span class="t">${esc(state.teamName)}${hl?' · '+esc(LBL(hl)):''}</span>
         <span class="w">${esc(SLOT().name)} · ${T('window')} ${w+1}</span></div>
       <div class="wcGrid" style="grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},1fr)">${cells}</div>
     </div>`;
@@ -1112,7 +1174,8 @@ function bigPlaySVG(play, withDef, hl){
     const fill = (hl && pid!==hl) ? '#c3c9ce' : COLORS[pid];
     if(pid==='C') s += `<rect x="${cx-13}" y="${cy-13}" width="26" height="26" rx="5" fill="${fill}" stroke="#fff" stroke-width="2.5"/>`;
     else s += `<circle cx="${cx}" cy="${cy}" r="14" fill="${fill}" stroke="#fff" stroke-width="2.5"/>`;
-    s += `<text x="${cx}" y="${cy+5}" font-size="14" font-weight="bold" fill="#fff" text-anchor="middle">${pid}</text>`;
+    const lb = LBL(pid);
+    s += `<text x="${cx}" y="${cy+(lb.length>1?3.5:5)}" font-size="${lb.length>1?9.5:14}" font-weight="bold" fill="#fff" text-anchor="middle">${esc(lb)}</text>`;
   }
   return s + `</svg>`;
 }
@@ -1123,7 +1186,7 @@ function buildA4(){
     const tags = p.tags ? `<div class="a4tags">🏷 ${esc(p.tags)}</div>` : '';
     return `<div class="a4page">
       <div class="a4head">${logo}<span class="n">${i+1}</span>
-        <span class="nm">${esc(p.name||'Play '+(i+1))}${hl?' · '+hl:''}</span>
+        <span class="nm">${esc(p.name||'Play '+(i+1))}${hl?' · '+esc(LBL(hl)):''}</span>
         <span class="sl">${esc(state.teamName)} · ${esc(SLOT().name)}</span></div>
       ${bigPlaySVG(p, state.print.def, hl)}
       ${tags}<div class="a4note">${esc(p.note||'')}</div>
@@ -1145,9 +1208,12 @@ function refreshPrintUI(){
   document.getElementById('prGrid').value = state.print.grid;
   document.getElementById('prTeam').value = state.teamName;
   document.getElementById('prLogo').checked = state.print.logo;
-  const [c,r] = gridDims();
-  const cnt = document.getElementById('prCount');
-  if(cnt) cnt.textContent = c*r*3;
+  const [c,r] = gridDims(), per = c*r, n = SLOT().plays.length;
+  const cards = Math.max(1, Math.ceil(n/per));
+  document.getElementById('prCountLbl').textContent =
+    T('winInfo').replace('{w}', cards).replace('{n}', n);
+  for(const pid of ['X','Y','C','Z'])
+    document.querySelector(`#prPos option[value="${pid}"]`).textContent = LBL(pid);
   document.getElementById('printPrev').innerHTML = buildPrint();
 }
 document.getElementById('prLay').onchange = ev=>{ state.print.layout = ev.target.value; refreshPrintUI(); save(); };
@@ -1268,6 +1334,93 @@ async function loadSharedFromHash(){
     }).catch(()=>{});
   }
 })();
+
+/* ================= Anleitung ================= */
+const HELP = {
+de: `
+<h3>🏈 Rhinos Playbook – Anleitung</h3>
+<p class="dim">5v5 Flag Football · Positionen: X, Y, Z (Receiver), C (Center), Q (Quarterback)</p>
+
+<h4>Plays ansehen</h4>
+<p>Links ein Play antippen oder mit <span class="k">◀</span> <span class="k">▶</span> blättern. <span class="k">▶ Abspielen</span> animiert die Laufwege. Gestrichelte Linien sind Options-Routen, Pfeil = Laufweg-Ende, Punkt = Route endet dort (z.B. Block/Screen).</p>
+
+<h4>Speicher-Slots</h4>
+<p>Oben links liegt das Slot-Menü: mehrere Playbooks parallel (z.B. „Playbook" und „Gameplan Woche 5"). <span class="k">+</span> neu, <span class="k">✎</span> umbenennen, <span class="k">⧉</span> duplizieren, <span class="k">✕</span> löschen. Jeder Slot hat eigene Plays und Defense.</p>
+
+<h4>Plays bearbeiten</h4>
+<p><span class="k">✏️ Bearbeiten</span> aktivieren, dann Spieler antippen – alle Routenpunkte werden sichtbar. Spieler und Punkte einfach ziehen. Ein Punkt wird durch Antippen ausgewählt (orange).</p>
+<p><span class="k">+ Punkt</span> fügt nach dem gewählten Punkt einen Zwischenpunkt ein. <span class="k">+ Abzweig</span> startet eine neue Linie am gewählten Punkt – so entstehen Options-Routen. <span class="k">Gestrichelt</span> und <span class="k">Ende: …</span> gelten für die Linie der Auswahl.</p>
+<p><span class="k">↶</span>/<span class="k">↷</span> = Rückgängig/Wiederholen (auch Strg+Z / Strg+Y). <span class="k">🧲</span> rastet Punkte auf halbe Yards ein. <span class="k">⇋</span> (Sidebar unten) spiegelt das Play links/rechts.</p>
+<p>Im Feld <span class="k">Name:</span> lässt sich die Bezeichnung des ausgewählten Spielers ändern (max. 3 Zeichen) – Offense-Namen gelten für den ganzen Slot, Defense-Namen pro Verteidiger. Dazu im Bearbeiten-Modus den Spieler bzw. Verteidiger antippen.</p>
+
+<h4>Notizen & Tags</h4>
+<p><span class="k">📝</span> öffnet Notizen (Coaching Points, QB-Reads) und Tags. Tags (z.B. „Redzone, 3rd Down") erscheinen als Filter über der Play-Liste. Sortieren per Drag & Drop oder <span class="k">▲▼</span> – die Nummern folgen der Reihenfolge.</p>
+
+<h4>Defense</h4>
+<p>Im Defense-Menü: <b>Cover 1</b> (Hybrid: CB/LB/S Zone, Backside-CB spielt Man, wenn der Receiver tief geht), <b>Cover 2</b> (2 Deep Halves + Flats), <b>Cover 3/Diamond</b> (3 Deep Thirds + Hole). Immer mit Rusher <b>R</b>. Verteidiger sind jederzeit verschiebbar, <span class="k">Zonen</span> blendet die Zonen ein/aus.</p>
+<p><span class="k">📌</span> speichert die aktuelle Defense fest für dieses Play (z.B. „hier erwarten wir Cover 3"). 📌 an = Play nutzt seine eigene Defense statt der globalen.</p>
+
+<h4>Drucken (🖨 Wristband)</h4>
+<p><b>Wristband:</b> Karten für die Fenster des Wristcoach – die Anzahl richtet sich nach deinen Plays (4–16 Plays pro Fenster wählbar; z.B. 40 Plays bei 15/Fenster = 3 Karten). Größe „Groß" (127×76 mm) oder „Klein" (102×60 mm) – per mm-Feld anpassbar: Fenster einfach ausmessen.</p>
+<p><b>Für: X/Y/C/Z</b> erstellt Spieler-Wristbands – die eigene Route farbig, alles andere grau.</p>
+<p><b>A4-Playbook:</b> 1 Play pro Seite mit Notizen und Tags, optional mit Defense – für Spielermappen.</p>
+<p>Logo über <span class="k">Logo wählen…</span> hochladen, erscheint auf allen Drucken. <b>Wichtig:</b> Im Browser-Druckdialog Skalierung auf 100% stellen.</p>
+
+<h4>Sichern & Teilen</h4>
+<p>Alles wird automatisch im Browser gespeichert (pro Gerät!). <span class="k">Export</span>/<span class="k">Import</span> sichert bzw. lädt den aktuellen Slot als JSON-Datei. <span class="k">🔗</span> kopiert einen Link, der das komplette Playbook enthält – der Empfänger öffnet ihn und bekommt es als neuen Slot.</p>
+
+<h4>Gameday (🏟)</h4>
+<p>Vollbild-Kacheln für die Seitenlinie: Play antippen → groß anzeigen → nach dem Snap <span class="k">✓</span> (hat funktioniert) oder <span class="k">✗</span> tippen. Die Quote (z.B. 3✓/5) steht auf den Kacheln und in der Play-Liste.</p>
+
+<h4>Als App installieren</h4>
+<p>Wenn die Seite online liegt (z.B. GitHub Pages, zusammen mit der Datei <b>sw.js</b>): auf dem Handy im Browser-Menü „Zum Startbildschirm hinzufügen" wählen – die App läuft dann offline mit eigenem Icon.</p>
+`,
+en: `
+<h3>🏈 Rhinos Playbook – Guide</h3>
+<p class="dim">5v5 flag football · positions: X, Y, Z (receivers), C (center), Q (quarterback)</p>
+
+<h4>Viewing plays</h4>
+<p>Tap a play on the left or browse with <span class="k">◀</span> <span class="k">▶</span>. <span class="k">▶ Play</span> animates the routes. Dashed lines are option routes, arrow = route end, dot = route stops there (e.g. block/screen).</p>
+
+<h4>Save slots</h4>
+<p>The slot menu sits top left: keep several playbooks in parallel (e.g. "Playbook" and "Game plan week 5"). <span class="k">+</span> new, <span class="k">✎</span> rename, <span class="k">⧉</span> duplicate, <span class="k">✕</span> delete. Each slot has its own plays and defense.</p>
+
+<h4>Editing plays</h4>
+<p>Enable <span class="k">✏️ Edit</span>, then tap a player – all route points appear. Drag players and points. Tap a point to select it (orange).</p>
+<p><span class="k">+ Point</span> inserts a point after the selected one. <span class="k">+ Branch</span> starts a new line at the selected point – that's how you build option routes. <span class="k">Dashed</span> and <span class="k">End: …</span> apply to the selected line.</p>
+<p><span class="k">↶</span>/<span class="k">↷</span> = undo/redo (also Ctrl+Z / Ctrl+Y). <span class="k">🧲</span> snaps points to half yards. <span class="k">⇋</span> (sidebar bottom) mirrors the play left/right.</p>
+<p>The <span class="k">Name:</span> field changes the label of the selected player (max. 3 characters) – offense labels apply to the whole slot, defense labels per defender. In edit mode, just tap the player or defender first.</p>
+
+<h4>Notes & tags</h4>
+<p><span class="k">📝</span> opens notes (coaching points, QB reads) and tags. Tags (e.g. "redzone, 3rd down") appear as a filter above the play list. Sort via drag & drop or <span class="k">▲▼</span> – numbers follow the order.</p>
+
+<h4>Defense</h4>
+<p>In the defense menu: <b>Cover 1</b> (hybrid: CB/LB/S zone, backside CB plays man if the receiver goes deep), <b>Cover 2</b> (2 deep halves + flats), <b>Cover 3/diamond</b> (3 deep thirds + hole). Always with rusher <b>R</b>. Defenders can be dragged anytime, <span class="k">Zones</span> toggles the zones.</p>
+<p><span class="k">📌</span> pins the current defense to this play (e.g. "we expect cover 3 here"). 📌 on = the play uses its own defense instead of the global one.</p>
+
+<h4>Printing (🖨 Wristband)</h4>
+<p><b>Wristband:</b> cards for the windows of your wrist coach – the number of cards follows your play count (4–16 plays per window selectable; e.g. 40 plays at 15/window = 3 cards). Size "Large" (127×76 mm) or "Small" (102×60 mm) – adjustable in mm: just measure your windows.</p>
+<p><b>For: X/Y/C/Z</b> creates player wristbands – own route in color, everything else gray.</p>
+<p><b>A4 playbook:</b> 1 play per page with notes and tags, optionally with defense – for player binders.</p>
+<p>Upload a logo via <span class="k">Choose logo…</span>; it appears on all prints. <b>Important:</b> set scaling to 100% in the browser print dialog.</p>
+
+<h4>Saving & sharing</h4>
+<p>Everything is saved automatically in the browser (per device!). <span class="k">Export</span>/<span class="k">Import</span> saves/loads the current slot as a JSON file. <span class="k">🔗</span> copies a link containing the whole playbook – recipients open it and get it as a new slot.</p>
+
+<h4>Game day (🏟)</h4>
+<p>Full-screen tiles for the sideline: tap a play → view it large → after the snap tap <span class="k">✓</span> (worked) or <span class="k">✗</span>. The ratio (e.g. 3✓/5) shows on the tiles and in the play list.</p>
+
+<h4>Install as an app</h4>
+<p>If the page is hosted online (e.g. GitHub Pages, together with the <b>sw.js</b> file): on your phone choose "Add to Home Screen" in the browser menu – the app then works offline with its own icon.</p>
+`};
+function renderHelp(){ document.getElementById('helpContent').innerHTML = HELP[state.lang] || HELP.de; }
+document.getElementById('btnHelp').onclick = ()=>{
+  renderHelp(); document.getElementById('helpOv').classList.add('show');
+};
+document.getElementById('helpClose').onclick = ()=>document.getElementById('helpOv').classList.remove('show');
+document.getElementById('helpOv').onclick = ev=>{
+  if(ev.target.id==='helpOv') document.getElementById('helpOv').classList.remove('show');
+};
 
 /* ================= Gameday-Modus ================= */
 let gdCur = -1;
