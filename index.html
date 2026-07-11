@@ -97,7 +97,7 @@
   .cell svg{width:100%;height:100%}
   #printArea{display:none}
   @media print{
-    #app,#hint,#printOv,#gdOv{display:none!important}
+    #app,#hint,#printOv,#gdOv,#fcOv,#helpOv{display:none!important}
     #printArea{display:block!important}
     body{background:#fff}
     @page{margin:10mm}
@@ -150,6 +150,59 @@
   #gdGood{background:#2e7d32;color:#fff}
   #gdBad{background:#c62828;color:#fff}
 
+  /* Startseite */
+  #homeView{display:none;flex-direction:column;height:100%;overflow:auto;
+    padding:clamp(14px,1.6vw,32px) clamp(16px,2vw,44px)}
+  #homeView.show{display:flex}
+  #homeHead{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:clamp(12px,1.2vw,24px)}
+  #homeHead h2{margin:0;font-size:clamp(20px,1.5vw,32px)}
+  #homeHead img{height:clamp(34px,2.6vw,54px);border-radius:6px}
+  #homeSlotWrap{display:flex;gap:4px;align-items:center;margin-left:auto}
+  #homeSlotWrap select{min-width:140px;font-size:clamp(13px,0.85vw,17px)}
+  #homeSlotWrap button{font-size:clamp(13px,0.85vw,17px)}
+  #homeActions{display:flex;gap:clamp(10px,0.9vw,18px);flex-wrap:wrap;margin-bottom:clamp(10px,0.9vw,18px)}
+  .homeBtn{font-size:clamp(15px,1.15vw,26px);font-weight:600;border-radius:clamp(8px,0.6vw,14px);
+    padding:clamp(13px,1.05vw,24px) clamp(18px,1.7vw,38px)}
+  #homeActions2{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:clamp(14px,1.3vw,26px)}
+  #homeActions2 button{font-size:clamp(13px,0.85vw,18px);padding:clamp(7px,0.6vw,13px) clamp(11px,0.95vw,20px)}
+  #homeGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(170px,13vw,260px),1fr));
+    gap:clamp(10px,0.9vw,18px);padding-bottom:20px}
+  .homeAdd{display:flex;align-items:center;justify-content:center;font-size:clamp(44px,3.4vw,68px);color:var(--dim);
+    background:var(--panel2);border:2px dashed var(--line);border-radius:10px;min-height:150px;cursor:pointer}
+  .homeAdd:hover{border-color:var(--acc);color:var(--acc)}
+
+  /* Flashcard-Trainer */
+  #fcOv{display:none;position:fixed;inset:0;background:#0c0f12;z-index:60;overflow:auto}
+  #fcOv.show{display:block}
+  #fcHead{display:flex;gap:8px;align-items:center;padding:10px 14px;position:sticky;top:0;
+    background:#0c0f12;border-bottom:1px solid var(--line);z-index:2;flex-wrap:wrap}
+  #fcProg{color:var(--dim);font-size:13px;margin-left:auto}
+  #fcWrap{max-width:560px;margin:20px auto;padding:0 12px 24px}
+  #fcCard{background:#fff;border-radius:12px;min-height:330px;display:flex;align-items:center;
+    justify-content:center;color:#111;padding:16px;cursor:pointer;overflow:hidden}
+  #fcCard svg{width:100%;max-height:70vh}
+  #fcCard .big{font-size:32px;font-weight:800;text-align:center;line-height:1.3}
+  #fcCard .num{display:inline-block;background:#000;color:#fff;border-radius:14px;
+    padding:2px 14px;font-size:20px;margin-bottom:10px}
+  #fcBtns{display:flex;gap:10px;margin-top:12px}
+  #fcBtns button{flex:1;font-size:17px;padding:13px;border-radius:10px;font-weight:700;border:none}
+  #fcFlip{background:var(--acc);color:#06121f}
+  #fcKnew{background:#2e7d32;color:#fff}
+  #fcAgain{background:#b26a00;color:#fff}
+  #fcRestart{background:var(--panel2);color:var(--txt);border:1px solid var(--line)!important}
+
+  /* Flashcards-Druck (Faltkarten) */
+  .fcpPage{width:190mm;min-height:262mm;background:#fff;display:grid;grid-template-columns:1fr 1fr;
+    grid-auto-rows:118mm;gap:6mm;margin:0 auto 8mm;padding:5mm;box-sizing:border-box;
+    page-break-after:always;align-content:start}
+  .fcpCell{border:0.4mm dashed #888;display:flex;flex-direction:column;overflow:hidden;background:#fff}
+  .fcpName{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2mm;
+    transform:rotate(180deg);color:#111;padding:3mm;text-align:center;font-size:6.5mm;font-weight:700;min-height:0}
+  .fcpNum{background:#000;color:#fff;border-radius:5mm;padding:0.5mm 4mm;font-size:5mm}
+  .fcpFold{border-top:0.35mm dotted #999}
+  .fcpThumb{flex:1;display:flex;min-height:0}
+  .fcpThumb svg{width:100%;height:100%}
+
   /* A4-Playbook */
   .a4page{width:190mm;min-height:262mm;background:#fff;color:#111;display:flex;flex-direction:column;
     margin:0 auto 8mm;page-break-after:always;padding:5mm;box-sizing:border-box}
@@ -173,16 +226,38 @@
 </style>
 </head>
 <body>
-<div id="app">
-  <div id="side">
-    <h1>🏈 Rhinos 2026<small>5v5 Flag Football – wrist 26</small></h1>
-    <div id="slotBar">
+<div id="homeView">
+  <div id="homeHead">
+    <img id="homeLogo" style="display:none">
+    <h2 id="homeTitle">🏈 Playbook</h2>
+    <div id="homeSlotWrap">
       <select id="slotSel" title="Speicher-Slot wählen"></select>
       <button id="slotNew" title="Neuer Slot">+</button>
       <button id="slotRen" title="Slot umbenennen">✎</button>
       <button id="slotDup" title="Slot duplizieren">⧉</button>
       <button id="slotDel" title="Slot löschen" class="warn">✕</button>
     </div>
+  </div>
+  <div id="homeActions">
+    <button id="btnGoEdit" class="homeBtn grn">✏️ Playbook bearbeiten</button>
+    <button id="btnFlash" class="homeBtn" title="Flashcards – Playbook lernen">🃏 Flashcards</button>
+    <button id="btnGameday" class="homeBtn">🏟 Gameday</button>
+    <button id="btnPrint" class="homeBtn" title="Drucken">🖨 Drucken</button>
+  </div>
+  <div id="homeActions2">
+    <button id="btnShare" title="Link zum Teilen kopieren">🔗 Teilen</button>
+    <button id="btnExport" title="Playbook als JSON-Datei sichern">Export</button>
+    <button id="btnImport">Import</button>
+    <button id="btnReset" class="warn" title="Alles auf die Standard-Plays zurücksetzen">Reset</button>
+    <button id="btnLang" title="Sprache / Language">EN</button>
+    <button id="btnHelp" title="Anleitung">❓ Anleitung</button>
+    <input type="file" id="fileIn" accept=".json" style="display:none">
+  </div>
+  <div id="homeGrid"></div>
+</div>
+<div id="app">
+  <div id="side">
+    <h1>🏈 Rhinos 2026<small>5v5 Flag Football – wrist 26</small></h1>
     <select id="tagFilter"></select>
     <div id="playList"></div>
     <div id="sideFoot">
@@ -195,6 +270,7 @@
 
   <div id="main">
     <div id="topbar">
+      <button id="btnHomeNav" title="Zur Übersicht">🏠</button>
       <button id="burger">☰</button>
       <button id="btnPrev" title="Vorheriges Play">◀</button>
       <button id="btnNext" title="Nächstes Play">▶</button>
@@ -203,7 +279,6 @@
       <div class="sep"></div>
       <button id="btnMode">✏️ Bearbeiten</button>
       <button id="btnAnim" class="grn">▶ Abspielen</button>
-      <button id="btnGameday">🏟 Gameday</button>
       <div class="sep"></div>
       <span class="lbl" style="color:var(--dim)">Defense:</span>
       <select id="defSel">
@@ -215,14 +290,6 @@
       <button id="btnZones" title="Zonen anzeigen">Zonen</button>
       <button id="btnPinDef" title="Defense für dieses Play merken">📌</button>
       <div class="spacer"></div>
-      <button id="btnShare" title="Link zum Teilen kopieren">🔗</button>
-      <button id="btnPrint" title="QB-Wristband-Playsheets drucken">🖨 Wristband</button>
-      <button id="btnExport" title="Playbook als JSON-Datei sichern">Export</button>
-      <button id="btnImport">Import</button>
-      <button id="btnReset" class="warn" title="Alles auf die Standard-Plays zurücksetzen">Reset</button>
-      <button id="btnLang" title="Sprache / Language">EN</button>
-      <button id="btnHelp" title="Anleitung">❓</button>
-      <input type="file" id="fileIn" accept=".json" style="display:none">
     </div>
 
     <div id="editBar">
@@ -269,6 +336,7 @@
       <select id="prLay">
         <option value="wrist">Wristband (3 Fenster)</option>
         <option value="a4">A4-Playbook (1 Play/Seite)</option>
+        <option value="flash">Flashcards (falten & ausschneiden)</option>
       </select>
       <label id="prForLbl">Für:</label>
       <select id="prPos">
@@ -319,6 +387,26 @@
   <div id="helpPanel">
     <button id="helpClose">✕</button>
     <div id="helpContent"></div>
+  </div>
+</div>
+<div id="fcOv">
+  <div id="fcHead">
+    <button id="fcExit">✕</button>
+    <select id="fcDir">
+      <option value="n2p">Name → Play</option>
+      <option value="p2n">Play → Name</option>
+    </select>
+    <select id="fcPos"></select>
+    <span id="fcProg"></span>
+  </div>
+  <div id="fcWrap">
+    <div id="fcCard"></div>
+    <div id="fcBtns">
+      <button id="fcFlip">Umdrehen</button>
+      <button id="fcKnew" style="display:none">✓ Gewusst</button>
+      <button id="fcAgain" style="display:none">↻ Nochmal</button>
+      <button id="fcRestart" style="display:none">Neu starten</button>
+    </div>
   </div>
 </div>
 <div id="gdOv">
@@ -377,7 +465,7 @@ const I18N = {
 de:{
   newBtn:'+ Neu', dupBtn:'Duplizieren', delBtn:'Löschen',
   edit:'✏️ Bearbeiten', editOn:'✏️ Bearbeiten (an)', anim:'▶ Abspielen',
-  defOff:'— aus —', zones:'Zonen', printBtn:'🖨 Wristband',
+  defOff:'— aus —', zones:'Zonen', printBtn:'🖨 Drucken',
   selLbl:'Auswahl:', tapPlayer:'Spieler antippen', player:'Spieler', point:'Punkt', line:'Linie',
   addPt:'+ Punkt', delPt:'– Punkt', addBranch:'+ Abzweig', delLine:'Linie löschen', dashed:'Gestrichelt',
   endA:'Ende: Pfeil', endO:'Ende: Punkt', endN:'Ende: offen',
@@ -414,12 +502,16 @@ de:{
   gameday:'🏟 Gameday', gdReset:'Statistik zurücksetzen', gdResetQ:'Alle Play-Statistiken zurücksetzen?',
   gdBack:'← Alle Plays', layoutLbl:'Layout:', layWrist:'Wristband (3 Fenster)',
   layA4:'A4-Playbook (1 Play/Seite)', forLbl:'Für:', forAll:'QB (alle Routen)', printDef:'Defense mitdrucken',
-  nameLbl:'Name:', nameT:'Bezeichnung des ausgewählten Spielers (Offense oder Defense, max. 3 Zeichen)'
+  nameLbl:'Name:', nameT:'Bezeichnung des ausgewählten Spielers (Offense oder Defense, max. 3 Zeichen)',
+  goEdit:'✏️ Playbook bearbeiten', homeNavT:'Zur Übersicht', shareBtn:'🔗 Teilen', helpBtn:'❓ Anleitung',
+  flashT:'Flashcards – Playbook lernen', layFlash:'Flashcards (falten & ausschneiden)',
+  fcFlip:'Umdrehen', fcKnew:'✓ Gewusst', fcAgain:'↻ Nochmal', fcRestart:'Neu starten',
+  fcDone:'Fertig! Alle Karten gewusst. 🎉', fcLeft:'Noch {a} von {b}', fcAllPos:'Alle Routen'
 },
 en:{
   newBtn:'+ New', dupBtn:'Duplicate', delBtn:'Delete',
   edit:'✏️ Edit', editOn:'✏️ Edit (on)', anim:'▶ Play',
-  defOff:'— off —', zones:'Zones', printBtn:'🖨 Wristband',
+  defOff:'— off —', zones:'Zones', printBtn:'🖨 Print',
   selLbl:'Selection:', tapPlayer:'Tap a player', player:'Player', point:'Point', line:'Line',
   addPt:'+ Point', delPt:'– Point', addBranch:'+ Branch', delLine:'Delete line', dashed:'Dashed',
   endA:'End: arrow', endO:'End: dot', endN:'End: open',
@@ -456,7 +548,11 @@ en:{
   gameday:'🏟 Game day', gdReset:'Reset stats', gdResetQ:'Reset all play stats?',
   gdBack:'← All plays', layoutLbl:'Layout:', layWrist:'Wristband (3 windows)',
   layA4:'A4 playbook (1 play/page)', forLbl:'For:', forAll:'QB (all routes)', printDef:'Include defense',
-  nameLbl:'Name:', nameT:'Label of the selected player (offense or defense, max. 3 characters)'
+  nameLbl:'Name:', nameT:'Label of the selected player (offense or defense, max. 3 characters)',
+  goEdit:'✏️ Edit playbook', homeNavT:'Back to overview', shareBtn:'🔗 Share', helpBtn:'❓ Guide',
+  flashT:'Flashcards – learn the playbook', layFlash:'Flashcards (fold & cut)',
+  fcFlip:'Flip', fcKnew:'✓ Knew it', fcAgain:'↻ Again', fcRestart:'Restart',
+  fcDone:'Done! You knew all cards. 🎉', fcLeft:'{a} of {b} left', fcAllPos:'All routes'
 }};
 function T(k){ return (I18N[state.lang]||I18N.de)[k] || I18N.de[k] || k; }
 function applyLang(){
@@ -486,6 +582,11 @@ function applyLang(){
   t('prTeamLbl',T('teamLbl')); t('prLogoTxt',T('printLogo'));
   t('prLogoUp',T('chooseLogo')); t('prLogoRm',T('rmLogo'));
   t('prClose',T('close')); t('prGo',T('doPrint'));
+  ti('btnFlash',T('flashT'));
+  t('btnGoEdit',T('goEdit')); ti('btnHomeNav',T('homeNavT'));
+  t('btnShare',T('shareBtn')); t('btnHelp',T('helpBtn'));
+  document.querySelector('#prLay option[value="flash"]').textContent = T('layFlash');
+  t('fcFlip',T('fcFlip')); t('fcKnew',T('fcKnew')); t('fcAgain',T('fcAgain')); t('fcRestart',T('fcRestart'));
   ti('btnMirror',T('mirrorT')); ti('btnUndo',T('undoT')); ti('btnRedo',T('redoT'));
   ti('btnSnap',T('snapT')); ti('btnNotes',T('notesT')); ti('btnPinDef',T('pinT')); ti('btnShare',T('shareT'));
   t('btnGameday',T('gameday')); t('gdReset',T('gdReset')); t('gdBack',T('gdBack'));
@@ -685,6 +786,7 @@ function render(){
   renderSidebar();
   renderTopbar();
   renderEditBar();
+  if(state.view==='home') renderHome();
 }
 
 function renderSlots(){
@@ -1193,15 +1295,36 @@ function buildA4(){
     </div>`;
   }).join('');
 }
-function buildPrint(){ return state.print.layout==='a4' ? buildA4() : buildCards(); }
+function buildFlashPrint(){
+  const hl = state.print.pos==='all' ? null : state.print.pos;
+  const plays = SLOT().plays;
+  let pages = '';
+  for(let p=0; p<plays.length; p+=4){
+    const cells = plays.slice(p, p+4).map((pl,i)=>{
+      const n = p+i+1;
+      return `<div class="fcpCell">
+        <div class="fcpName"><span class="fcpNum">${n}</span><span>${esc(pl.name||'Play '+n)}</span></div>
+        <div class="fcpFold"></div>
+        <div class="fcpThumb">${playThumbSVG(pl, n, hl)}</div>
+      </div>`;
+    }).join('');
+    pages += `<div class="fcpPage">${cells}</div>`;
+  }
+  return pages;
+}
+function buildPrint(){
+  if(state.print.layout==='a4') return buildA4();
+  if(state.print.layout==='flash') return buildFlashPrint();
+  return buildCards();
+}
 function refreshPrintUI(){
-  const a4 = state.print.layout==='a4';
+  const a4 = state.print.layout==='a4', wrist = state.print.layout==='wrist';
   document.getElementById('prLay').value = state.print.layout;
   document.getElementById('prPos').value = state.print.pos;
   document.getElementById('prDef').checked = state.print.def;
   document.getElementById('prDefWrap').style.display = a4 ? '' : 'none';
-  document.getElementById('prRowSize').style.display = a4 ? 'none' : '';
-  document.getElementById('prRowGrid').style.display = a4 ? 'none' : '';
+  document.getElementById('prRowSize').style.display = wrist ? '' : 'none';
+  document.getElementById('prRowGrid').style.display = wrist ? '' : 'none';
   document.getElementById('prSize').value = state.print.preset;
   document.getElementById('prW').value = state.print.w;
   document.getElementById('prH').value = state.print.h;
@@ -1341,6 +1464,9 @@ de: `
 <h3>🏈 Rhinos Playbook – Anleitung</h3>
 <p class="dim">5v5 Flag Football · Positionen: X, Y, Z (Receiver), C (Center), Q (Quarterback)</p>
 
+<h4>Startseite</h4>
+<p>Die Startseite zeigt alle Plays des aktiven Slots als Übersicht. Von hier geht's zu <span class="k">✏️ Plays bearbeiten</span>, <span class="k">🖨 Drucken</span>, <span class="k">🃏 Flashcards</span> und <span class="k">🏟 Gameday</span>; darunter Teilen, Export/Import und Sprache. Ein Play antippen öffnet es direkt im Editor, die <span class="k">＋</span>-Kachel legt ein neues an. Zurück geht's im Editor über <span class="k">🏠</span>.</p>
+
 <h4>Plays ansehen</h4>
 <p>Links ein Play antippen oder mit <span class="k">◀</span> <span class="k">▶</span> blättern. <span class="k">▶ Abspielen</span> animiert die Laufwege. Gestrichelte Linien sind Options-Routen, Pfeil = Laufweg-Ende, Punkt = Route endet dort (z.B. Block/Screen).</p>
 
@@ -1369,6 +1495,10 @@ de: `
 <h4>Sichern & Teilen</h4>
 <p>Alles wird automatisch im Browser gespeichert (pro Gerät!). <span class="k">Export</span>/<span class="k">Import</span> sichert bzw. lädt den aktuellen Slot als JSON-Datei. <span class="k">🔗</span> kopiert einen Link, der das komplette Playbook enthält – der Empfänger öffnet ihn und bekommt es als neuen Slot.</p>
 
+<h4>Flashcards (🃏)</h4>
+<p>Lernmodus fürs Team: Karte zeigt den Play-Namen → im Kopf visualisieren → antippen zum Umdrehen → <span class="k">✓ Gewusst</span> oder <span class="k">↻ Nochmal</span> (kommt wieder, bis alles sitzt). Richtung umschaltbar (Name → Play oder Play → Name), und über die Positionsauswahl kann jeder Spieler gezielt seine eigene Route lernen.</p>
+<p>Zum Ausdrucken gibt es im Druckdialog das Layout <b>Flashcards</b>: 4 Faltkarten pro A4-Seite – ausschneiden, an der gepunkteten Linie falten: vorne das Play-Diagramm, hinten der Name.</p>
+
 <h4>Gameday (🏟)</h4>
 <p>Vollbild-Kacheln für die Seitenlinie: Play antippen → groß anzeigen → nach dem Snap <span class="k">✓</span> (hat funktioniert) oder <span class="k">✗</span> tippen. Die Quote (z.B. 3✓/5) steht auf den Kacheln und in der Play-Liste.</p>
 
@@ -1378,6 +1508,9 @@ de: `
 en: `
 <h3>🏈 Rhinos Playbook – Guide</h3>
 <p class="dim">5v5 flag football · positions: X, Y, Z (receivers), C (center), Q (quarterback)</p>
+
+<h4>Home screen</h4>
+<p>The home screen shows all plays of the active slot as an overview. From here you reach <span class="k">✏️ Edit plays</span>, <span class="k">🖨 Print</span>, <span class="k">🃏 Flashcards</span> and <span class="k">🏟 Game day</span>; below that sharing, export/import and language. Tapping a play opens it in the editor, the <span class="k">＋</span> tile creates a new one. Use <span class="k">🏠</span> in the editor to get back.</p>
 
 <h4>Viewing plays</h4>
 <p>Tap a play on the left or browse with <span class="k">◀</span> <span class="k">▶</span>. <span class="k">▶ Play</span> animates the routes. Dashed lines are option routes, arrow = route end, dot = route stops there (e.g. block/screen).</p>
@@ -1407,6 +1540,10 @@ en: `
 <h4>Saving & sharing</h4>
 <p>Everything is saved automatically in the browser (per device!). <span class="k">Export</span>/<span class="k">Import</span> saves/loads the current slot as a JSON file. <span class="k">🔗</span> copies a link containing the whole playbook – recipients open it and get it as a new slot.</p>
 
+<h4>Flashcards (🃏)</h4>
+<p>Study mode for the team: the card shows the play name → visualize it → tap to flip → <span class="k">✓ Knew it</span> or <span class="k">↻ Again</span> (repeats until everything sticks). Direction is switchable (name → play or play → name), and the position selector lets each player drill their own route.</p>
+<p>For printing, the print dialog offers the <b>Flashcards</b> layout: 4 fold-cards per A4 page – cut out, fold at the dotted line: play diagram on the front, name on the back.</p>
+
 <h4>Game day (🏟)</h4>
 <p>Full-screen tiles for the sideline: tap a play → view it large → after the snap tap <span class="k">✓</span> (worked) or <span class="k">✗</span>. The ratio (e.g. 3✓/5) shows on the tiles and in the play list.</p>
 
@@ -1421,6 +1558,56 @@ document.getElementById('helpClose').onclick = ()=>document.getElementById('help
 document.getElementById('helpOv').onclick = ev=>{
   if(ev.target.id==='helpOv') document.getElementById('helpOv').classList.remove('show');
 };
+
+/* ================= Flashcard-Trainer ================= */
+let fcQueue = [], fcFlipped = false, fcTotal = 0;
+function fcStart(){
+  fcQueue = SLOT().plays.map((_,i)=>i);
+  for(let i=fcQueue.length-1; i>0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [fcQueue[i], fcQueue[j]] = [fcQueue[j], fcQueue[i]];
+  }
+  fcTotal = fcQueue.length; fcFlipped = false;
+  fcRender();
+}
+function fcPosVal(){ const v = document.getElementById('fcPos').value; return v==='all' ? null : v; }
+function fcRender(){
+  const card = document.getElementById('fcCard');
+  const show = (id,on)=>document.getElementById(id).style.display = on ? '' : 'none';
+  document.getElementById('fcProg').textContent =
+    fcQueue.length ? T('fcLeft').replace('{a}', fcQueue.length).replace('{b}', fcTotal) : '';
+  if(!fcQueue.length){
+    card.innerHTML = `<div class="big">${T('fcDone')}</div>`;
+    show('fcFlip',false); show('fcKnew',false); show('fcAgain',false); show('fcRestart',true);
+    return;
+  }
+  const i = fcQueue[0], p = SLOT().plays[i];
+  const nameSide = `<div class="big"><span class="num">${i+1}</span><br>${esc(p.name||'Play '+(i+1))}</div>`;
+  const playSide = bigPlaySVG(p, false, fcPosVal());
+  const dir = document.getElementById('fcDir').value;
+  const front = dir==='n2p' ? nameSide : playSide;
+  const back  = dir==='n2p' ? playSide : nameSide;
+  card.innerHTML = fcFlipped ? back : front;
+  show('fcFlip', !fcFlipped); show('fcKnew', fcFlipped); show('fcAgain', fcFlipped); show('fcRestart', false);
+}
+function fcFillPos(){
+  const sel = document.getElementById('fcPos');
+  sel.innerHTML = `<option value="all">${T('fcAllPos')}</option>` +
+    ['X','Y','C','Z'].map(pid=>`<option value="${pid}">${esc(LBL(pid))}</option>`).join('');
+}
+document.getElementById('btnFlash').onclick = ()=>{
+  fcFillPos();
+  document.getElementById('fcOv').classList.add('show');
+  fcStart();
+};
+document.getElementById('fcExit').onclick = ()=>document.getElementById('fcOv').classList.remove('show');
+document.getElementById('fcCard').onclick = ()=>{ if(fcQueue.length){ fcFlipped=!fcFlipped; fcRender(); } };
+document.getElementById('fcFlip').onclick = ()=>{ fcFlipped=true; fcRender(); };
+document.getElementById('fcKnew').onclick = ()=>{ fcQueue.shift(); fcFlipped=false; fcRender(); };
+document.getElementById('fcAgain').onclick = ()=>{ fcQueue.push(fcQueue.shift()); fcFlipped=false; fcRender(); };
+document.getElementById('fcRestart').onclick = fcStart;
+document.getElementById('fcDir').onchange = ()=>{ fcFlipped=false; fcRender(); };
+document.getElementById('fcPos').onchange = ()=>fcRender();
 
 /* ================= Gameday-Modus ================= */
 let gdCur = -1;
@@ -1473,8 +1660,38 @@ document.getElementById('btnLang').onclick = ()=>{
   render(); save();
 };
 
+/* ================= Startseite / Navigation ================= */
+function showView(v){
+  state.view = v;
+  document.getElementById('homeView').classList.toggle('show', v==='home');
+  document.getElementById('app').style.display = v==='home' ? 'none' : 'flex';
+  if(v==='home') renderHome();
+}
+function renderHome(){
+  renderSlots();
+  document.getElementById('homeTitle').textContent = '🏈 '+state.teamName+' – '+SLOT().name;
+  const lg = document.getElementById('homeLogo');
+  if(state.logo){ lg.src = state.logo; lg.style.display = ''; } else lg.style.display = 'none';
+  const g = document.getElementById('homeGrid');
+  g.innerHTML = SLOT().plays.map((p,i)=>{
+    const st = (p.stats && p.stats.c) ? `<span class="pStat">${p.stats.g}/${p.stats.c}</span>` : '';
+    return `<div class="gdTile" data-i="${i}">${playThumbSVG(p, i+1)}
+      <div class="gdCap"><span class="pNum">${i+1}</span><span class="nm">${esc(p.name||'Play '+(i+1))}</span>${st}</div></div>`;
+  }).join('') + `<div class="homeAdd" id="homeAdd" title="${esc(T('newPlay'))}">＋</div>`;
+  g.querySelectorAll('.gdTile').forEach(el=> el.onclick = ()=>{
+    SLOT().cur = +el.dataset.i; state.selP=null; state.selH=null; state.selD=null;
+    showView('editor'); render(); save();
+  });
+  document.getElementById('homeAdd').onclick = ()=>{
+    document.getElementById('btnNew').click(); showView('editor');
+  };
+}
+document.getElementById('btnGoEdit').onclick = ()=>{ showView('editor'); render(); };
+document.getElementById('btnHomeNav').onclick = ()=>showView('home');
+
 applyLang();
 render();
+showView('home');
 loadSharedFromHash();
 </script>
 </body>
