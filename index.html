@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#14181c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Playbook">
 <title>Rhinos 2026 – Playbook</title>
 <style>
   :root{
@@ -93,11 +97,59 @@
   .cell svg{width:100%;height:100%}
   #printArea{display:none}
   @media print{
-    #app,#hint,#printOv{display:none!important}
+    #app,#hint,#printOv,#gdOv{display:none!important}
     #printArea{display:block!important}
     body{background:#fff}
     @page{margin:10mm}
   }
+
+  /* Notizen & Tags */
+  #notesBar{display:none;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
+  #notesBar.show{display:block}
+  #notesBar textarea{width:100%;height:54px;background:var(--panel2);border:1px solid var(--line);
+    color:var(--txt);border-radius:8px;padding:8px;font:inherit;resize:vertical}
+  #notesBar .tagRow{display:flex;gap:8px;align-items:center;margin-top:6px}
+  #notesBar .tagRow label{color:var(--dim);font-size:12px}
+  #notesBar .tagRow input{flex:1;background:var(--panel2);border:1px solid var(--line);
+    color:var(--txt);border-radius:8px;padding:6px 8px}
+
+  /* Sidebar-Extras */
+  #tagFilter{margin:8px 8px 0;width:calc(100% - 16px)}
+  .pMove{display:flex;flex-direction:column;gap:1px;margin-left:2px}
+  .pMove button{padding:0 5px;font-size:8px;line-height:11px;border-radius:4px}
+  .pStat{font-size:10px;color:var(--dim);margin-left:2px;white-space:nowrap}
+
+  /* Gameday */
+  #gdOv{display:none;position:fixed;inset:0;background:#0c0f12;z-index:60;overflow:auto}
+  #gdOv.show{display:block}
+  #gdHead{display:flex;gap:8px;align-items:center;padding:10px 14px;position:sticky;top:0;
+    background:#0c0f12;border-bottom:1px solid var(--line);z-index:2}
+  #gdGridWrap{padding:12px}
+  #gdGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+  .gdTile{background:#fff;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid transparent}
+  .gdTile:hover{border-color:var(--acc)}
+  .gdCap{display:flex;gap:6px;align-items:center;padding:5px 8px;background:var(--panel2)}
+  .gdCap span.nm{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  #gdDetail{display:none;padding:12px;max-width:560px;margin:0 auto}
+  #gdDetail svg{width:100%;background:#fff;border-radius:10px}
+  #gdBtns{display:flex;gap:10px;margin-top:10px}
+  #gdBtns button{flex:1;font-size:20px;padding:14px;border:none;border-radius:10px;font-weight:700}
+  #gdGood{background:#2e7d32;color:#fff}
+  #gdBad{background:#c62828;color:#fff}
+
+  /* A4-Playbook */
+  .a4page{width:190mm;min-height:262mm;background:#fff;color:#111;display:flex;flex-direction:column;
+    margin:0 auto 8mm;page-break-after:always;padding:5mm;box-sizing:border-box}
+  .a4head{display:flex;align-items:center;gap:4mm;border-bottom:0.5mm solid #333;
+    padding-bottom:2mm;margin-bottom:3mm}
+  .a4head img{height:12mm}
+  .a4head .n{font-size:7mm;font-weight:800}
+  .a4head .nm{font-size:5.5mm;font-weight:600}
+  .a4head .sl{margin-left:auto;font-size:3.5mm;color:#666}
+  .a4page svg{width:100%;flex:1;min-height:0}
+  .a4tags{font-size:3.2mm;color:#555;margin-top:1mm}
+  .a4note{font-size:4mm;white-space:pre-wrap;border-top:0.3mm solid #ccc;
+    padding-top:2mm;margin-top:2mm;min-height:14mm}
 
   @media (max-width:760px){
     #side{position:fixed;z-index:20;height:100%;left:-230px;transition:left .2s}
@@ -118,10 +170,12 @@
       <button id="slotDup" title="Slot duplizieren">⧉</button>
       <button id="slotDel" title="Slot löschen" class="warn">✕</button>
     </div>
+    <select id="tagFilter"></select>
     <div id="playList"></div>
     <div id="sideFoot">
       <button id="btnNew">+ Neu</button>
       <button id="btnDup">Duplizieren</button>
+      <button id="btnMirror" title="Play links/rechts spiegeln">⇋</button>
       <button id="btnDel" class="warn">Löschen</button>
     </div>
   </div>
@@ -132,9 +186,11 @@
       <button id="btnPrev" title="Vorheriges Play">◀</button>
       <button id="btnNext" title="Nächstes Play">▶</button>
       <input type="text" id="playName" placeholder="Play-Name">
+      <button id="btnNotes" title="Notizen & Tags">📝</button>
       <div class="sep"></div>
       <button id="btnMode">✏️ Bearbeiten</button>
       <button id="btnAnim" class="grn">▶ Abspielen</button>
+      <button id="btnGameday">🏟 Gameday</button>
       <div class="sep"></div>
       <span class="lbl" style="color:var(--dim)">Defense:</span>
       <select id="defSel">
@@ -144,7 +200,9 @@
         <option value="c3">Cover 3 (Diamond)</option>
       </select>
       <button id="btnZones" title="Zonen anzeigen">Zonen</button>
+      <button id="btnPinDef" title="Defense für dieses Play merken">📌</button>
       <div class="spacer"></div>
+      <button id="btnShare" title="Link zum Teilen kopieren">🔗</button>
       <button id="btnPrint" title="QB-Wristband-Playsheets drucken">🖨 Wristband</button>
       <button id="btnExport" title="Playbook als JSON-Datei sichern">Export</button>
       <button id="btnImport">Import</button>
@@ -154,6 +212,10 @@
     </div>
 
     <div id="editBar">
+      <button id="btnUndo" title="Rückgängig (Strg+Z)">↶</button>
+      <button id="btnRedo" title="Wiederholen (Strg+Y)">↷</button>
+      <button id="btnSnap" title="Einrasten (halbe Yards)">🧲</button>
+      <div class="sep"></div>
       <span class="lbl" id="selLbl">Auswahl:</span><span id="selInfo">–</span>
       <div class="sep"></div>
       <button id="btnAddPt" title="Fügt nach dem ausgewählten Punkt einen Zwischenpunkt ein; ohne Auswahl wird die Route am Ende verlängert">+ Punkt</button>
@@ -171,6 +233,14 @@
       <span class="lbl" id="editTip">Tipp: Punkt auf der Route antippen, dann „+ Abzweig" für eine Options-Route ab diesem Punkt.</span>
     </div>
 
+    <div id="notesBar">
+      <textarea id="noteTa" placeholder="Notizen zum Play (Coaching Points, QB-Reads …)"></textarea>
+      <div class="tagRow">
+        <label id="tagsLblEl">Tags:</label>
+        <input type="text" id="tagsIn" placeholder="z.B. Redzone, 3rd Down (Komma-getrennt)">
+      </div>
+    </div>
+
     <div id="fieldWrap"></div>
   </div>
 </div>
@@ -178,6 +248,20 @@
   <div id="printPanel">
     <h3 id="prTitle">🖨 QB-Wristband drucken</h3>
     <div class="pRow">
+      <label id="prLayLbl">Layout:</label>
+      <select id="prLay">
+        <option value="wrist">Wristband (3 Fenster)</option>
+        <option value="a4">A4-Playbook (1 Play/Seite)</option>
+      </select>
+      <label id="prForLbl">Für:</label>
+      <select id="prPos">
+        <option value="all">QB (alle Routen)</option>
+        <option value="X">X</option><option value="Y">Y</option>
+        <option value="C">C</option><option value="Z">Z</option>
+      </select>
+      <label id="prDefWrap" style="display:none"><input type="checkbox" id="prDef"> <span id="prDefTxt">Defense mitdrucken</span></label>
+    </div>
+    <div class="pRow" id="prRowSize">
       <label id="prSizeLbl">Größe:</label>
       <select id="prSize">
         <option value="gross">Groß (127 × 76 mm)</option>
@@ -187,7 +271,7 @@
       <input type="number" id="prH" min="30" max="150">
       <label id="prMmLbl">mm pro Fenster (anpassbar)</label>
     </div>
-    <div class="pRow">
+    <div class="pRow" id="prRowGrid">
       <label id="prGridLbl">Plays pro Fenster:</label>
       <select id="prGrid">
         <option value="2x2">4 (2×2)</option>
@@ -212,6 +296,20 @@
   </div>
 </div>
 <div id="printArea"></div>
+<div id="gdOv">
+  <div id="gdHead">
+    <button id="gdExit">✕</button>
+    <b id="gdTitle"></b>
+    <div class="spacer"></div>
+    <button id="gdReset">Statistik zurücksetzen</button>
+  </div>
+  <div id="gdGridWrap"><div id="gdGrid"></div></div>
+  <div id="gdDetail">
+    <button id="gdBack">← Alle Plays</button>
+    <div id="gdField" style="margin-top:10px"></div>
+    <div id="gdBtns"><button id="gdGood">✓</button><button id="gdBad">✗</button></div>
+  </div>
+</div>
 <div id="hint">Änderungen werden automatisch gespeichert</div>
 
 <script>
@@ -280,7 +378,17 @@ de:{
   newPlay:'Neues Play', invalidFile:'Ungültige Datei.', readErr:'Datei konnte nicht gelesen werden.',
   def_c1:'Cover 1 (Hybrid) · CB/LB/S = Zone · Backside-CB: Man, wenn der Receiver tief geht',
   def_c2:'Cover 2 · CB = Flat · S = Deep Half',
-  def_c3:'Cover 3 (Diamond) · LB = Hole · CB/S = Deep Thirds'
+  def_c3:'Cover 3 (Diamond) · LB = Hole · CB/S = Deep Thirds',
+  mirrorT:'Play links/rechts spiegeln', undoT:'Rückgängig (Strg+Z)', redoT:'Wiederholen (Strg+Y)',
+  snapT:'Einrasten auf halbe Yards', notesT:'Notizen & Tags',
+  notePh:'Notizen zum Play (Coaching Points, QB-Reads …)', tagsLbl:'Tags:',
+  tagsPh:'z.B. Redzone, 3rd Down (Komma-getrennt)', allTags:'🏷 Alle Plays', tUp:'Nach oben', tDown:'Nach unten',
+  pinT:'Defense für dieses Play merken (📌 an = Play hat eigene Defense)',
+  shareT:'Link zum Teilen kopieren', shareCopied:'Link kopiert – einfach ans Team schicken!',
+  shareLoadQ:'Geteiltes Playbook "{n}" als neuen Slot laden?', shared:'Geteilt',
+  gameday:'🏟 Gameday', gdReset:'Statistik zurücksetzen', gdResetQ:'Alle Play-Statistiken zurücksetzen?',
+  gdBack:'← Alle Plays', layoutLbl:'Layout:', layWrist:'Wristband (3 Fenster)',
+  layA4:'A4-Playbook (1 Play/Seite)', forLbl:'Für:', forAll:'QB (alle Routen)', printDef:'Defense mitdrucken'
 },
 en:{
   newBtn:'+ New', dupBtn:'Duplicate', delBtn:'Delete',
@@ -311,7 +419,17 @@ en:{
   newPlay:'New play', invalidFile:'Invalid file.', readErr:'Could not read the file.',
   def_c1:'Cover 1 (hybrid) · CB/LB/S = zone · backside CB: man if the receiver goes deep',
   def_c2:'Cover 2 · CB = flat · S = deep half',
-  def_c3:'Cover 3 (diamond) · LB = hole · CB/S = deep thirds'
+  def_c3:'Cover 3 (diamond) · LB = hole · CB/S = deep thirds',
+  mirrorT:'Mirror play left/right', undoT:'Undo (Ctrl+Z)', redoT:'Redo (Ctrl+Y)',
+  snapT:'Snap to half yards', notesT:'Notes & tags',
+  notePh:'Play notes (coaching points, QB reads …)', tagsLbl:'Tags:',
+  tagsPh:'e.g. redzone, 3rd down (comma-separated)', allTags:'🏷 All plays', tUp:'Move up', tDown:'Move down',
+  pinT:'Pin defense to this play (📌 on = play has its own defense)',
+  shareT:'Copy share link', shareCopied:'Link copied – send it to your team!',
+  shareLoadQ:'Load shared playbook "{n}" as a new slot?', shared:'Shared',
+  gameday:'🏟 Game day', gdReset:'Reset stats', gdResetQ:'Reset all play stats?',
+  gdBack:'← All plays', layoutLbl:'Layout:', layWrist:'Wristband (3 windows)',
+  layA4:'A4 playbook (1 play/page)', forLbl:'For:', forAll:'QB (all routes)', printDef:'Include defense'
 }};
 function T(k){ return (I18N[state.lang]||I18N.de)[k] || I18N.de[k] || k; }
 function applyLang(){
@@ -342,6 +460,16 @@ function applyLang(){
   t('prTeamLbl',T('teamLbl')); t('prLogoTxt',T('printLogo'));
   t('prLogoUp',T('chooseLogo')); t('prLogoRm',T('rmLogo'));
   t('prClose',T('close')); t('prGo',T('doPrint'));
+  ti('btnMirror',T('mirrorT')); ti('btnUndo',T('undoT')); ti('btnRedo',T('redoT'));
+  ti('btnSnap',T('snapT')); ti('btnNotes',T('notesT')); ti('btnPinDef',T('pinT')); ti('btnShare',T('shareT'));
+  t('btnGameday',T('gameday')); t('gdReset',T('gdReset')); t('gdBack',T('gdBack'));
+  document.getElementById('noteTa').placeholder = T('notePh');
+  document.getElementById('tagsIn').placeholder = T('tagsPh');
+  t('tagsLblEl',T('tagsLbl'));
+  t('prLayLbl',T('layoutLbl')); t('prForLbl',T('forLbl')); t('prDefTxt',T('printDef'));
+  document.querySelector('#prLay option[value="wrist"]').textContent = T('layWrist');
+  document.querySelector('#prLay option[value="a4"]').textContent = T('layA4');
+  document.querySelector('#prPos option[value="all"]').textContent = T('forAll');
   document.getElementById('btnLang').textContent = state.lang==='de' ? 'EN' : 'DE';
 }
 
@@ -355,9 +483,11 @@ let state = {
   slots: [freshSlot('Playbook 1')], slot: 0,
   mode: 'view', selP: null, selH: null,          // selH = {li, pi}
   logo: null, teamName: 'Rhinos', lang: 'de',
-  print: {preset:'gross', w:127, h:76, grid:'4x2', logo:true}
+  snap: true, tagFilter: '', showNotes: false,
+  print: {preset:'gross', w:127, h:76, grid:'4x2', logo:true, layout:'wrist', pos:'all', def:false}
 };
 function SLOT(){ return state.slots[state.slot]; }
+function DEF(){ const p = SLOT().plays[SLOT().cur]; return p.defOverride || SLOT().def; }
 try{
   const saved = localStorage.getItem(LS_KEY);
   if(saved){ const s = JSON.parse(saved);
@@ -365,6 +495,7 @@ try{
       state.slots = s.slots; state.slot = Math.min(s.slot||0, s.slots.length-1);
       state.logo = s.logo || null; state.teamName = s.teamName || 'Rhinos';
       state.lang = s.lang || 'de';
+      state.snap = s.snap !== false;
       if(s.print) state.print = Object.assign(state.print, s.print);
     } else if(s.plays && s.plays.length){   // altes Ein-Playbook-Format migrieren
       state.slots = [{name:'Playbook 1', plays:s.plays,
@@ -385,8 +516,35 @@ function save(){
   clearTimeout(saveTimer);
   saveTimer = setTimeout(()=>{ try{
     localStorage.setItem(LS_KEY, JSON.stringify({slots:state.slots, slot:state.slot,
-      logo:state.logo, teamName:state.teamName, print:state.print, lang:state.lang}));
+      logo:state.logo, teamName:state.teamName, print:state.print, lang:state.lang, snap:state.snap}));
   }catch(e){} }, 300);
+}
+
+/* ================= Undo / Redo & Einrasten ================= */
+let undoStack = [], redoStack = [];
+function snapshot(){ return JSON.stringify({plays:SLOT().plays, def:SLOT().def, cur:SLOT().cur}); }
+function pushUndo(){
+  const sn = snapshot();
+  if(undoStack[undoStack.length-1]===sn) return;
+  undoStack.push(sn); if(undoStack.length>60) undoStack.shift();
+  redoStack.length = 0;
+}
+function clearUndo(){ undoStack.length=0; redoStack.length=0; }
+function applySnapshot(sn){
+  const d = JSON.parse(sn);
+  SLOT().plays = d.plays; SLOT().def = d.def; SLOT().cur = Math.min(d.cur, d.plays.length-1);
+  state.selP=null; state.selH=null; render(); save();
+}
+function doUndo(){ if(!undoStack.length) return; redoStack.push(snapshot()); applySnapshot(undoStack.pop()); }
+function doRedo(){ if(!redoStack.length) return; undoStack.push(snapshot()); applySnapshot(redoStack.pop()); }
+document.addEventListener('keydown', ev=>{
+  if(!(ev.ctrlKey||ev.metaKey) || ev.altKey) return;
+  const k = ev.key.toLowerCase();
+  if(k==='z' && !ev.shiftKey){ ev.preventDefault(); doUndo(); }
+  else if(k==='y' || (k==='z' && ev.shiftKey)){ ev.preventDefault(); doRedo(); }
+});
+function snapPt(p){
+  return state.snap ? [Math.round(p[0]), Math.round(p[1]*2)/2] : p;
 }
 
 /* ================= Feld-Geometrie ================= */
@@ -415,17 +573,18 @@ function render(){
   // Feld
   s += `<rect width="${W}" height="${H}" fill="#f4f6f3"/>`;
   s += `<rect width="${W}" height="${H}" fill="none" stroke="#c9d2c9" stroke-width="2"/>`;
-  for(let y=-10; y<=20; y+=5){
+  for(let y=-10; y<=20; y+=1){
     if(y===0) continue;
-    s += `<line x1="8" y1="${FY(y)}" x2="${W-8}" y2="${FY(y)}" stroke="#dde4dd" stroke-width="1.5"/>`;
-    s += `<text x="${W-12}" y="${FY(y)-4}" font-size="10" fill="#aab6aa" text-anchor="end">${y>0?'+':''}${y}</text>`;
+    const five = y%5===0;
+    s += `<line x1="8" y1="${FY(y)}" x2="${W-8}" y2="${FY(y)}" stroke="${five?'#c8d2c8':'#e7ece7'}" stroke-width="${five?2.5:1}"/>`;
+    if(five) s += `<text x="${W-12}" y="${FY(y)-4}" font-size="10" fill="#aab6aa" text-anchor="end">${y>0?'+':''}${y}</text>`;
   }
   // LOS
   s += `<line x1="0" y1="${FY(0)}" x2="${W}" y2="${FY(0)}" stroke="#8a958a" stroke-width="4"/>`;
   s += `<text x="10" y="${FY(0)-8}" font-size="11" fill="#8a958a" font-weight="bold">LOS</text>`;
 
-  // ---- Defense (unter Offense-Routen? nein: Zonen unten, Spieler oben) ----
-  const D = SLOT().def;
+  // ---- Defense (Zonen unten, Spieler oben); pro Play überschreibbar ----
+  const D = DEF();
   if(D.preset!=='off'){
     if(D.zones) for(const d of D.players){
       if(d.z) s += `<ellipse cx="${FX(d.x)}" cy="${FY(d.y)}" rx="${d.z[0]*5.7}" ry="${d.z[1]*24}"
@@ -498,26 +657,77 @@ function renderSlots(){
   sel.innerHTML = state.slots.map((s,i)=>
     `<option value="${i}" ${i===state.slot?'selected':''}>${esc(s.name)}</option>`).join('');
 }
+function playMatchesFilter(p){
+  if(!state.tagFilter) return true;
+  return (p.tags||'').split(',').map(t=>t.trim()).includes(state.tagFilter);
+}
 function renderSidebar(){
   renderSlots();
+  const plays = SLOT().plays;
+  // Tag-Filter füllen
+  const tf = document.getElementById('tagFilter');
+  const tags = new Set();
+  plays.forEach(p=>(p.tags||'').split(',').map(t=>t.trim()).filter(Boolean).forEach(t=>tags.add(t)));
+  if(state.tagFilter && !tags.has(state.tagFilter)) state.tagFilter='';
+  tf.innerHTML = `<option value="">${T('allTags')}</option>` +
+    [...tags].sort().map(t=>`<option value="${esc(t)}" ${t===state.tagFilter?'selected':''}>${esc(t)}</option>`).join('');
+  tf.style.display = tags.size ? '' : 'none';
+
   const list = document.getElementById('playList');
-  list.innerHTML = SLOT().plays.map((p,i)=>
-    `<div class="pItem ${i===SLOT().cur?'on':''}" data-i="${i}">
-       <span class="pNum">${esc(p.n)}</span><span class="pName">${esc(p.name||'Play '+p.n)}</span>
-     </div>`).join('');
-  list.querySelectorAll('.pItem').forEach(el=>el.onclick=()=>{
-    SLOT().cur = +el.dataset.i; state.selP=null; state.selH=null; render(); save();
-    document.getElementById('side').classList.remove('open');
+  list.innerHTML = plays.map((p,i)=>{
+    if(!playMatchesFilter(p)) return '';
+    const st = (p.stats && p.stats.c) ? `<span class="pStat">${p.stats.g}/${p.stats.c}</span>` : '';
+    const mv = (i===SLOT().cur && !state.tagFilter)
+      ? `<span class="pMove"><button data-mv="-1" title="${T('tUp')}">▲</button><button data-mv="1" title="${T('tDown')}">▼</button></span>` : '';
+    return `<div class="pItem ${i===SLOT().cur?'on':''}" data-i="${i}" draggable="true">
+       <span class="pNum">${i+1}</span><span class="pName">${esc(p.name||'Play '+(i+1))}</span>${st}${mv}</div>`;
+  }).join('');
+  list.querySelectorAll('.pItem').forEach(el=>{
+    el.onclick = ev=>{
+      if(ev.target.dataset && ev.target.dataset.mv){ movePlay(+el.dataset.i, +ev.target.dataset.mv); return; }
+      SLOT().cur = +el.dataset.i; state.selP=null; state.selH=null; render(); save();
+      document.getElementById('side').classList.remove('open');
+    };
+    el.ondragstart = ev=>ev.dataTransfer.setData('text/plain', el.dataset.i);
+    el.ondragover = ev=>ev.preventDefault();
+    el.ondrop = ev=>{
+      ev.preventDefault();
+      const from = +ev.dataTransfer.getData('text/plain'), to = +el.dataset.i;
+      if(isNaN(from) || from===to) return;
+      pushUndo();
+      const arr = SLOT().plays, [it] = arr.splice(from,1);
+      arr.splice(to,0,it); SLOT().cur = to; render(); save();
+    };
   });
 }
+function movePlay(i,dir){
+  const arr = SLOT().plays, j = i+dir;
+  if(j<0 || j>=arr.length) return;
+  pushUndo();
+  const [it] = arr.splice(i,1); arr.splice(j,0,it); SLOT().cur = j; render(); save();
+}
+document.getElementById('tagFilter').onchange = ev=>{ state.tagFilter = ev.target.value; renderSidebar(); };
 function renderTopbar(){
   const p = SLOT().plays[SLOT().cur];
   const nameIn = document.getElementById('playName');
   if(document.activeElement!==nameIn) nameIn.value = p.name || ('Play '+p.n);
   document.getElementById('btnMode').classList.toggle('on', state.mode==='edit');
   document.getElementById('btnMode').textContent = state.mode==='edit' ? T('editOn') : T('edit');
-  document.getElementById('defSel').value = SLOT().def.preset;
-  document.getElementById('btnZones').classList.toggle('on', SLOT().def.zones);
+  document.getElementById('defSel').value = DEF().preset;
+  document.getElementById('btnZones').classList.toggle('on', DEF().zones);
+  const play = SLOT().plays[SLOT().cur];
+  document.getElementById('btnPinDef').classList.toggle('on', !!play.defOverride);
+  document.getElementById('btnNotes').classList.toggle('on', !!(play.note || play.tags));
+  document.getElementById('btnSnap').classList.toggle('on', !!state.snap);
+  renderNotes();
+}
+function renderNotes(){
+  const p = SLOT().plays[SLOT().cur];
+  document.getElementById('notesBar').classList.toggle('show', !!state.showNotes);
+  const ta = document.getElementById('noteTa');
+  if(document.activeElement!==ta) ta.value = p.note||'';
+  const ti = document.getElementById('tagsIn');
+  if(document.activeElement!==ti) ti.value = p.tags||'';
 }
 function renderEditBar(){
   const bar = document.getElementById('editBar');
@@ -577,7 +787,7 @@ function bindField(){
       if(state.mode==='edit'){ state.selP=null; state.selH=null; }
       drag = null;
     }
-    if(drag){ svg.setPointerCapture(ev.pointerId); ev.preventDefault(); }
+    if(drag){ pushUndo(); svg.setPointerCapture(ev.pointerId); ev.preventDefault(); }
     render();
   };
   svg.onpointermove = ev=>{
@@ -585,16 +795,18 @@ function bindField(){
     const p = svgPoint(ev);
     const play = SLOT().plays[SLOT().cur];
     if(drag.type==='h'){
-      play.lines[drag.li].pts[drag.pi] = [p[0],p[1]];
+      play.lines[drag.li].pts[drag.pi] = snapPt(p);
     } else if(drag.type==='o'){
-      const dx=p[0]-drag.start[0], dy=p[1]-drag.start[1];
-      play.pos[drag.pid] = [drag.pos0[0]+dx, drag.pos0[1]+dy];
+      const np = snapPt([drag.pos0[0]+p[0]-drag.start[0], drag.pos0[1]+p[1]-drag.start[1]]);
+      const dx=np[0]-drag.pos0[0], dy=np[1]-drag.pos0[1];
+      play.pos[drag.pid] = np;
       play.lines.forEach((l,i)=>{
         if(drag.lines0[i]) l.pts = drag.lines0[i].map(q=>[q[0]+dx, q[1]+dy]);
       });
     } else if(drag.type==='d'){
-      SLOT().def.players[drag.di].x = p[0];
-      SLOT().def.players[drag.di].y = Math.max(0.5, p[1]);
+      const sp = snapPt(p);
+      DEF().players[drag.di].x = sp[0];
+      DEF().players[drag.di].y = Math.max(0.5, sp[1]);
     }
     requestRender();
   };
@@ -613,21 +825,31 @@ document.getElementById('btnNext').onclick = ()=>{ SLOT().cur=(SLOT().cur+1)%SLO
 document.getElementById('playName').oninput = ev=>{ SLOT().plays[SLOT().cur].name = ev.target.value; renderSidebar(); save(); };
 document.getElementById('btnMode').onclick = ()=>{ state.mode = state.mode==='edit'?'view':'edit'; state.selP=null; state.selH=null; render(); };
 document.getElementById('defSel').onchange = ev=>{
-  const v = ev.target.value;
-  SLOT().def.preset = v;
-  if(v!=='off') SLOT().def.players = JSON.parse(JSON.stringify(DEF_PRESETS[v]));
+  pushUndo();
+  const v = ev.target.value, D = DEF();
+  D.preset = v;
+  if(v!=='off') D.players = JSON.parse(JSON.stringify(DEF_PRESETS[v]));
   render(); save();
 };
-document.getElementById('btnZones').onclick = ()=>{ SLOT().def.zones=!SLOT().def.zones; render(); save(); };
+document.getElementById('btnZones').onclick = ()=>{ const D=DEF(); D.zones=!D.zones; render(); save(); };
+document.getElementById('btnPinDef').onclick = ()=>{
+  pushUndo();
+  const p = SLOT().plays[SLOT().cur];
+  if(p.defOverride) delete p.defOverride;
+  else p.defOverride = JSON.parse(JSON.stringify(SLOT().def));
+  render(); save();
+};
 
 /* Sidebar-Fuß */
 document.getElementById('btnNew').onclick = ()=>{
+  pushUndo();
   const n = SLOT().plays.length+1;
   const pl = P(n, null, ['X','Y','C','Z'].map(pid=>({p:pid, pts:[[STD[pid][0],0],[STD[pid][0],5]], d:0, e:'a'})));
   pl.name = T('newPlay');
   SLOT().plays.push(pl); SLOT().cur = SLOT().plays.length-1; render(); save();
 };
 document.getElementById('btnDup').onclick = ()=>{
+  pushUndo();
   const c = JSON.parse(JSON.stringify(SLOT().plays[SLOT().cur]));
   c.n = String(SLOT().plays.length+1); c.name = (c.name||'Play '+SLOT().plays[SLOT().cur].n)+T('copySuffix');
   SLOT().plays.splice(SLOT().cur+1,0,c); SLOT().cur++; render(); save();
@@ -635,12 +857,14 @@ document.getElementById('btnDup').onclick = ()=>{
 document.getElementById('btnDel').onclick = ()=>{
   if(SLOT().plays.length<=1) return;
   if(!confirm(T('delPlayQ').replace('{n}', SLOT().plays[SLOT().cur].name||'Play '+SLOT().plays[SLOT().cur].n))) return;
+  pushUndo();
   SLOT().plays.splice(SLOT().cur,1); SLOT().cur=Math.min(SLOT().cur,SLOT().plays.length-1); render(); save();
 };
 
 /* Edit-Panel */
 document.getElementById('btnAddPt').onclick = ()=>{
   if(!state.selP) return;
+  pushUndo();
   const play = SLOT().plays[SLOT().cur];
   if(state.selH){
     const ln = play.lines[state.selH.li];
@@ -659,11 +883,13 @@ document.getElementById('btnDelPt').onclick = ()=>{
   if(!state.selH) return;
   const ln = SLOT().plays[SLOT().cur].lines[state.selH.li];
   if(ln.pts.length<=2) return;
+  pushUndo();
   ln.pts.splice(state.selH.pi,1);
   state.selH=null; render(); save();
 };
 document.getElementById('btnAddLine').onclick = ()=>{
   if(!state.selP) return;
+  pushUndo();
   const play = SLOT().plays[SLOT().cur];
   let start;
   if(state.selH) start = play.lines[state.selH.li].pts[state.selH.pi].slice();
@@ -678,16 +904,33 @@ document.getElementById('btnDelLine').onclick = ()=>{
   let li = state.selH ? state.selH.li : -1;
   if(li<0){ for(let i=play.lines.length-1;i>=0;i--) if(play.lines[i].p===state.selP){li=i;break;} }
   if(li<0) return;
+  pushUndo();
   play.lines.splice(li,1); state.selH=null; render(); save();
 };
 document.getElementById('btnDash').onclick = ()=>{
   const ln = activeLine(); if(!ln) return;
+  pushUndo();
   ln.d = ln.d?0:1; render(); save();
 };
 document.getElementById('endSel').onchange = ev=>{
   const ln = activeLine(); if(!ln) return;
+  pushUndo();
   ln.e = ev.target.value; render(); save();
 };
+document.getElementById('btnUndo').onclick = doUndo;
+document.getElementById('btnRedo').onclick = doRedo;
+document.getElementById('btnSnap').onclick = ()=>{ state.snap=!state.snap; render(); save(); };
+document.getElementById('btnMirror').onclick = ()=>{
+  pushUndo();
+  const play = SLOT().plays[SLOT().cur];
+  for(const pid in play.pos) play.pos[pid][0] = +(100-play.pos[pid][0]).toFixed(2);
+  play.lines.forEach(l=> l.pts = l.pts.map(p=>[+(100-p[0]).toFixed(2), p[1]]));
+  if(play.defOverride) play.defOverride.players.forEach(d=> d.x = +(100-d.x).toFixed(2));
+  render(); save();
+};
+document.getElementById('btnNotes').onclick = ()=>{ state.showNotes=!state.showNotes; render(); };
+document.getElementById('noteTa').oninput = ev=>{ SLOT().plays[SLOT().cur].note = ev.target.value; save(); };
+document.getElementById('tagsIn').oninput = ev=>{ SLOT().plays[SLOT().cur].tags = ev.target.value; save(); renderSidebar(); };
 
 /* Export / Import / Reset */
 document.getElementById('btnExport').onclick = ()=>{
@@ -702,13 +945,14 @@ document.getElementById('fileIn').onchange = ev=>{
   const r = new FileReader();
   r.onload = ()=>{ try{
     const d = JSON.parse(r.result);
-    if(d.plays && d.plays.length){ SLOT().plays=d.plays; if(d.def) SLOT().def=d.def; SLOT().cur=0; render(); save(); }
+    if(d.plays && d.plays.length){ pushUndo(); SLOT().plays=d.plays; if(d.def) SLOT().def=d.def; SLOT().cur=0; render(); save(); }
     else alert(T('invalidFile'));
   }catch(e){ alert(T('readErr')); } };
   r.readAsText(f); ev.target.value='';
 };
 document.getElementById('btnReset').onclick = ()=>{
   if(!confirm(T('resetQ'))) return;
+  pushUndo();
   SLOT().plays = JSON.parse(JSON.stringify(DEFAULT_PLAYS));
   SLOT().cur=0; state.selP=null; state.selH=null; render(); save();
 };
@@ -749,13 +993,13 @@ document.getElementById('btnAnim').onclick = ()=>{
 
 /* ================= Speicher-Slots ================= */
 document.getElementById('slotSel').onchange = ev=>{
-  state.slot = +ev.target.value; state.selP=null; state.selH=null; render(); save();
+  state.slot = +ev.target.value; state.selP=null; state.selH=null; clearUndo(); render(); save();
 };
 document.getElementById('slotNew').onclick = ()=>{
   const name = prompt(T('newSlotPrompt'), T('gameplan')+' '+(state.slots.length+1));
   if(!name) return;
   state.slots.push(freshSlot(name)); state.slot = state.slots.length-1;
-  state.selP=null; state.selH=null; render(); save();
+  state.selP=null; state.selH=null; clearUndo(); render(); save();
 };
 document.getElementById('slotRen').onclick = ()=>{
   const name = prompt(T('renSlot'), SLOT().name);
@@ -766,35 +1010,38 @@ document.getElementById('slotDup').onclick = ()=>{
   const c = JSON.parse(JSON.stringify(SLOT()));
   c.name = SLOT().name + T('copySuffix');
   state.slots.splice(state.slot+1, 0, c); state.slot++;
-  render(); save();
+  clearUndo(); render(); save();
 };
 document.getElementById('slotDel').onclick = ()=>{
   if(state.slots.length<=1){ alert(T('lastSlot')); return; }
   if(!confirm(T('delSlotQ').replace('{n}', SLOT().name))) return;
   state.slots.splice(state.slot,1); state.slot = Math.min(state.slot, state.slots.length-1);
-  state.selP=null; state.selH=null; render(); save();
+  state.selP=null; state.selH=null; clearUndo(); render(); save();
 };
 
 /* ================= Wristband-Druck ================= */
-function playThumbSVG(play, num){
+function playThumbSVG(play, num, hl){
   const TX = x => 4 + x*2.32, TY = y => 112 - y*5.4;   // viewBox 240 x 164
   let s = `<svg viewBox="0 0 240 164" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">`;
   s += `<line x1="0" y1="${TY(0)}" x2="240" y2="${TY(0)}" stroke="#aaa" stroke-width="2"/>`;
   for(const ln of play.lines){
+    const col = hl ? (ln.p===hl ? COLORS[hl] : '#c3c9ce') : '#111';
+    const wd = hl && ln.p===hl ? 3.4 : 2.6;
     const pts = ln.pts.map(p=>[TX(p[0]),TY(p[1])]);
     s += `<path d="${pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')}"
-      fill="none" stroke="#111" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"
+      fill="none" stroke="${col}" stroke-width="${wd}" stroke-linejoin="round" stroke-linecap="round"
       ${ln.d?'stroke-dasharray="2.5 5"':''}/>`;
     if(pts.length>1){
       const a=pts[pts.length-2], b=pts[pts.length-1];
-      if(ln.e==='a') s += arrowHead(a,b,'#111',6.5);
-      else if(ln.e==='o') s += `<circle cx="${b[0]}" cy="${b[1]}" r="3.5" fill="#111"/>`;
+      if(ln.e==='a') s += arrowHead(a,b,col,6.5);
+      else if(ln.e==='o') s += `<circle cx="${b[0]}" cy="${b[1]}" r="3.5" fill="${col}"/>`;
     }
   }
   for(const pid of ['X','Y','C','Z','Q']){
     const [x,y]=play.pos[pid], cx=TX(x), cy=TY(y);
-    if(pid==='C') s += `<rect x="${cx-7}" y="${cy-7}" width="14" height="14" rx="3" fill="${COLORS[pid]}"/>`;
-    else s += `<circle cx="${cx}" cy="${cy}" r="8" fill="${COLORS[pid]}"/>`;
+    const fill = (hl && pid!==hl) ? '#c3c9ce' : COLORS[pid];
+    if(pid==='C') s += `<rect x="${cx-7}" y="${cy-7}" width="14" height="14" rx="3" fill="${fill}"/>`;
+    else s += `<circle cx="${cx}" cy="${cy}" r="8" fill="${fill}"/>`;
     s += `<text x="${cx}" y="${cy+3}" font-size="8.5" font-weight="bold" fill="#fff" text-anchor="middle">${pid}</text>`;
   }
   s += `<rect x="3" y="3" width="22" height="14" rx="7" fill="#000"/>
@@ -806,23 +1053,92 @@ function playThumbSVG(play, num){
 function gridDims(){ const [c,r] = state.print.grid.split('x').map(Number); return [c,r]; }
 function buildCards(){
   const [cols,rows] = gridDims(), per = cols*rows;
+  const hl = state.print.pos==='all' ? null : state.print.pos;
   const plays = SLOT().plays.slice(0, per*3);
   let html = '';
   for(let w=0; w<3; w++){
     const chunk = plays.slice(w*per, (w+1)*per);
     if(!chunk.length) break;
-    let cells = chunk.map((p,i)=>`<div class="cell">${playThumbSVG(p, w*per+i+1)}</div>`).join('');
+    let cells = chunk.map((p,i)=>`<div class="cell">${playThumbSVG(p, w*per+i+1, hl)}</div>`).join('');
     for(let i=chunk.length; i<per; i++) cells += '<div class="cell"></div>';
     const logo = (state.print.logo && state.logo) ? `<img src="${state.logo}">` : '';
     html += `<div class="wcard" style="width:${state.print.w}mm;height:${state.print.h}mm">
-      <div class="wcHead">${logo}<span class="t">${esc(state.teamName)}</span>
+      <div class="wcHead">${logo}<span class="t">${esc(state.teamName)}${hl?' · '+hl:''}</span>
         <span class="w">${esc(SLOT().name)} · ${T('window')} ${w+1}</span></div>
       <div class="wcGrid" style="grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},1fr)">${cells}</div>
     </div>`;
   }
   return html;
 }
+/* Großes statisches Play-Diagramm (A4-Druck & Gameday) */
+function bigPlaySVG(play, withDef, hl){
+  let s = `<svg viewBox="0 30 600 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">`;
+  s += `<rect y="30" width="600" height="700" fill="#fff"/>`;
+  for(let y=-9; y<=19; y+=1){
+    if(y===0) continue;
+    const five = y%5===0;
+    s += `<line x1="8" y1="${FY(y)}" x2="${W-8}" y2="${FY(y)}" stroke="${five?'#ccc':'#eee'}" stroke-width="${five?2:1}"/>`;
+    if(five) s += `<text x="${W-12}" y="${FY(y)-4}" font-size="10" fill="#999" text-anchor="end">${y>0?'+':''}${y}</text>`;
+  }
+  s += `<line x1="0" y1="${FY(0)}" x2="${W}" y2="${FY(0)}" stroke="#666" stroke-width="4"/>`;
+  if(withDef){
+    const D = play.defOverride || SLOT().def;
+    if(D.preset!=='off'){
+      for(const d of D.players){
+        if(d.z && D.zones!==false) s += `<ellipse cx="${FX(d.x)}" cy="${FY(d.y)}" rx="${d.z[0]*5.7}" ry="${d.z[1]*24}"
+          fill="rgba(198,40,40,.08)" stroke="rgba(198,40,40,.4)" stroke-width="1.5" stroke-dasharray="6 5"/>`;
+      }
+      for(const d of D.players){
+        const cx=FX(d.x), cy=FY(d.y), fs=d.l.length>1?10:13, dy=d.l.length>1?3.5:5;
+        s += `<rect x="${cx-13}" y="${cy-13}" width="26" height="26" rx="4" fill="#c62828" stroke="#fff" stroke-width="2.5" transform="rotate(45 ${cx} ${cy})"/>
+          <text x="${cx}" y="${cy+dy}" font-size="${fs}" font-weight="bold" fill="#fff" text-anchor="middle">${d.l}</text>`;
+      }
+    }
+  }
+  for(const ln of play.lines){
+    const col = hl ? (ln.p===hl ? COLORS[hl] : '#c3c9ce') : '#222';
+    const pts = ln.pts.map(p=>[FX(p[0]),FY(p[1])]);
+    s += `<path d="${pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')}"
+      fill="none" stroke="${col}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"
+      ${ln.d?'stroke-dasharray="3 9"':''}/>`;
+    if(pts.length>1){
+      const a=pts[pts.length-2], b=pts[pts.length-1];
+      if(ln.e==='a') s += arrowHead(a,b,col);
+      else if(ln.e==='o') s += `<circle cx="${b[0]}" cy="${b[1]}" r="6" fill="${col}"/>`;
+    }
+  }
+  for(const pid of ['X','Y','C','Z','Q']){
+    const [x,y]=play.pos[pid], cx=FX(x), cy=FY(y);
+    const fill = (hl && pid!==hl) ? '#c3c9ce' : COLORS[pid];
+    if(pid==='C') s += `<rect x="${cx-13}" y="${cy-13}" width="26" height="26" rx="5" fill="${fill}" stroke="#fff" stroke-width="2.5"/>`;
+    else s += `<circle cx="${cx}" cy="${cy}" r="14" fill="${fill}" stroke="#fff" stroke-width="2.5"/>`;
+    s += `<text x="${cx}" y="${cy+5}" font-size="14" font-weight="bold" fill="#fff" text-anchor="middle">${pid}</text>`;
+  }
+  return s + `</svg>`;
+}
+function buildA4(){
+  const hl = state.print.pos==='all' ? null : state.print.pos;
+  return SLOT().plays.map((p,i)=>{
+    const logo = (state.print.logo && state.logo) ? `<img src="${state.logo}">` : '';
+    const tags = p.tags ? `<div class="a4tags">🏷 ${esc(p.tags)}</div>` : '';
+    return `<div class="a4page">
+      <div class="a4head">${logo}<span class="n">${i+1}</span>
+        <span class="nm">${esc(p.name||'Play '+(i+1))}${hl?' · '+hl:''}</span>
+        <span class="sl">${esc(state.teamName)} · ${esc(SLOT().name)}</span></div>
+      ${bigPlaySVG(p, state.print.def, hl)}
+      ${tags}<div class="a4note">${esc(p.note||'')}</div>
+    </div>`;
+  }).join('');
+}
+function buildPrint(){ return state.print.layout==='a4' ? buildA4() : buildCards(); }
 function refreshPrintUI(){
+  const a4 = state.print.layout==='a4';
+  document.getElementById('prLay').value = state.print.layout;
+  document.getElementById('prPos').value = state.print.pos;
+  document.getElementById('prDef').checked = state.print.def;
+  document.getElementById('prDefWrap').style.display = a4 ? '' : 'none';
+  document.getElementById('prRowSize').style.display = a4 ? 'none' : '';
+  document.getElementById('prRowGrid').style.display = a4 ? 'none' : '';
   document.getElementById('prSize').value = state.print.preset;
   document.getElementById('prW').value = state.print.w;
   document.getElementById('prH').value = state.print.h;
@@ -830,9 +1146,13 @@ function refreshPrintUI(){
   document.getElementById('prTeam').value = state.teamName;
   document.getElementById('prLogo').checked = state.print.logo;
   const [c,r] = gridDims();
-  document.getElementById('prCount').textContent = c*r*3;
-  document.getElementById('printPrev').innerHTML = buildCards();
+  const cnt = document.getElementById('prCount');
+  if(cnt) cnt.textContent = c*r*3;
+  document.getElementById('printPrev').innerHTML = buildPrint();
 }
+document.getElementById('prLay').onchange = ev=>{ state.print.layout = ev.target.value; refreshPrintUI(); save(); };
+document.getElementById('prPos').onchange = ev=>{ state.print.pos = ev.target.value; refreshPrintUI(); save(); };
+document.getElementById('prDef').onchange = ev=>{ state.print.def = ev.target.checked; refreshPrintUI(); save(); };
 document.getElementById('btnPrint').onclick = ()=>{
   document.getElementById('printOv').classList.add('show'); refreshPrintUI();
 };
@@ -872,8 +1192,124 @@ document.getElementById('logoIn').onchange = ev=>{
 };
 document.getElementById('prLogoRm').onclick = ()=>{ state.logo=null; refreshPrintUI(); save(); };
 document.getElementById('prGo').onclick = ()=>{
-  document.getElementById('printArea').innerHTML = buildCards();
+  document.getElementById('printArea').innerHTML = buildPrint();
   window.print();
+};
+
+/* ================= Teilen per Link ================= */
+function b64FromBytes(bytes){
+  let bin=''; const CH=8192;
+  for(let i=0;i<bytes.length;i+=CH) bin += String.fromCharCode.apply(null, bytes.subarray(i,i+CH));
+  return btoa(bin);
+}
+document.getElementById('btnShare').onclick = async ()=>{
+  const data = JSON.stringify({name:SLOT().name, plays:SLOT().plays, def:SLOT().def});
+  let hash;
+  try{
+    if(window.CompressionStream){
+      const stream = new Blob([data]).stream().pipeThrough(new CompressionStream('gzip'));
+      const buf = await new Response(stream).arrayBuffer();
+      hash = 'd=' + b64FromBytes(new Uint8Array(buf));
+    } else {
+      hash = 'D=' + btoa(unescape(encodeURIComponent(data)));
+    }
+  }catch(e){ hash = 'D=' + btoa(unescape(encodeURIComponent(data))); }
+  const url = location.href.split('#')[0] + '#' + hash;
+  try{
+    await navigator.clipboard.writeText(url);
+    alert(T('shareCopied'));
+  }catch(e){
+    prompt('Link:', url);
+  }
+};
+async function loadSharedFromHash(){
+  const h = location.hash.slice(1);
+  if(!h.startsWith('d=') && !h.startsWith('D=')) return;
+  try{
+    const bytes = Uint8Array.from(atob(h.slice(2)), c=>c.charCodeAt(0));
+    let json;
+    if(h[0]==='d'){
+      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+      json = await new Response(stream).text();
+    } else {
+      json = decodeURIComponent(escape(atob(h.slice(2))));
+    }
+    const d = JSON.parse(json);
+    if(d.plays && d.plays.length && confirm(T('shareLoadQ').replace('{n}', d.name||'?'))){
+      state.slots.push({name: d.name||T('shared'), plays:d.plays,
+        def: d.def||{preset:'off',players:[],zones:true,v:DEF_V}, cur:0});
+      state.slot = state.slots.length-1;
+      clearUndo(); render(); save();
+    }
+    history.replaceState(null, '', location.pathname + location.search);
+  }catch(e){}
+}
+
+/* ================= PWA (Homescreen) ================= */
+(function(){
+  try{
+    const cv = document.createElement('canvas'); cv.width = cv.height = 192;
+    const cx = cv.getContext('2d');
+    cx.fillStyle = '#14181c'; cx.fillRect(0,0,192,192);
+    cx.font = '120px serif'; cx.textAlign='center'; cx.textBaseline='middle';
+    cx.fillText('🏈', 96, 104);
+    const icon = cv.toDataURL('image/png');
+    const mf = {name:'Rhinos Playbook', short_name:'Playbook', start_url:'.', display:'standalone',
+      background_color:'#14181c', theme_color:'#14181c',
+      icons:[{src:icon, sizes:'192x192', type:'image/png'}]};
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(mf));
+    document.head.appendChild(link);
+  }catch(e){}
+  if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
+    fetch('sw.js', {method:'HEAD'}).then(r=>{
+      if(r.ok) navigator.serviceWorker.register('sw.js').catch(()=>{});
+    }).catch(()=>{});
+  }
+})();
+
+/* ================= Gameday-Modus ================= */
+let gdCur = -1;
+function gdShowList(){
+  document.getElementById('gdDetail').style.display = 'none';
+  document.getElementById('gdGridWrap').style.display = '';
+  document.getElementById('gdTitle').textContent = state.teamName+' · '+SLOT().name;
+  const g = document.getElementById('gdGrid');
+  g.innerHTML = SLOT().plays.map((p,i)=>{
+    const st = (p.stats && p.stats.c) ? `<span class="pStat">${p.stats.g}✓ / ${p.stats.c}</span>` : '';
+    return `<div class="gdTile" data-i="${i}">${playThumbSVG(p, i+1)}
+      <div class="gdCap"><span class="pNum">${i+1}</span><span class="nm">${esc(p.name||'Play '+(i+1))}</span>${st}</div></div>`;
+  }).join('');
+  g.querySelectorAll('.gdTile').forEach(el=> el.onclick = ()=> gdShowDetail(+el.dataset.i));
+}
+function gdShowDetail(i){
+  gdCur = i;
+  const p = SLOT().plays[i];
+  document.getElementById('gdGridWrap').style.display = 'none';
+  document.getElementById('gdDetail').style.display = 'block';
+  document.getElementById('gdTitle').textContent = (i+1)+' · '+(p.name||'Play '+(i+1));
+  document.getElementById('gdField').innerHTML = bigPlaySVG(p, true, null);
+}
+function gdMark(good){
+  const p = SLOT().plays[gdCur]; if(!p) return;
+  p.stats = p.stats || {c:0, g:0};
+  p.stats.c++; if(good) p.stats.g++;
+  save(); gdShowList();
+}
+document.getElementById('btnGameday').onclick = ()=>{
+  document.getElementById('gdOv').classList.add('show'); gdShowList();
+};
+document.getElementById('gdExit').onclick = ()=>{
+  document.getElementById('gdOv').classList.remove('show'); render();
+};
+document.getElementById('gdBack').onclick = gdShowList;
+document.getElementById('gdGood').onclick = ()=>gdMark(true);
+document.getElementById('gdBad').onclick = ()=>gdMark(false);
+document.getElementById('gdReset').onclick = ()=>{
+  if(!confirm(T('gdResetQ'))) return;
+  SLOT().plays.forEach(p=>delete p.stats);
+  save(); gdShowList();
 };
 
 /* Sprachumschalter */
@@ -886,6 +1322,7 @@ document.getElementById('btnLang').onclick = ()=>{
 
 applyLang();
 render();
+loadSharedFromHash();
 </script>
 </body>
 </html>
