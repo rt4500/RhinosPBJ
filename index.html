@@ -71,7 +71,7 @@
   #slotBar button{padding:6px 8px}
 
   /* Druck-Overlay */
-  #printOv{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;overflow:auto}
+  #printOv{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:70;overflow:auto}
   #printOv.show{display:block}
   #printPanel{max-width:660px;margin:24px auto;background:var(--panel);border:1px solid var(--line);
     border-radius:12px;padding:16px}
@@ -279,6 +279,7 @@
       <div class="sep"></div>
       <button id="btnMode">✏️ Bearbeiten</button>
       <button id="btnAnim" class="grn">▶ Abspielen</button>
+      <button id="btnMirrorTop" title="Play links/rechts spiegeln">⇋ Flip Play</button>
       <div class="sep"></div>
       <span class="lbl" style="color:var(--dim)">Defense:</span>
       <select id="defSel">
@@ -290,6 +291,7 @@
       <button id="btnZones" title="Zonen anzeigen">Zonen</button>
       <button id="btnPinDef" title="Defense für dieses Play merken">📌</button>
       <div class="spacer"></div>
+      <button id="btnPrintEd" title="Drucken">🖨</button>
     </div>
 
     <div id="editBar">
@@ -307,11 +309,23 @@
       <label class="lbl" id="lblLbl">Name:</label>
       <input type="text" id="lblIn" maxlength="3" style="width:52px;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:6px 8px" disabled>
       <div class="sep"></div>
-      <button id="btnDash">Gestrichelt</button>
+      <select id="styleSel" title="Linienstil der ausgewählten Linie">
+        <option value="solid">durchgezogen</option>
+        <option value="dash">gestrichelt</option>
+        <option value="dot">gepunktet</option>
+        <option value="wave">gewellt (Motion)</option>
+      </select>
       <select id="endSel">
         <option value="a">Ende: Pfeil</option>
         <option value="o">Ende: Punkt</option>
         <option value="n">Ende: offen</option>
+      </select>
+      <div class="sep"></div>
+      <select id="lwSel" title="Liniendicke aller Routen (global)">
+        <option value="3">Linien: dünn</option>
+        <option value="4">Linien: normal</option>
+        <option value="5.5">Linien: dick</option>
+        <option value="7">Linien: sehr dick</option>
       </select>
       <div class="spacer"></div>
       <span class="lbl" id="editTip">Tipp: Punkt auf der Route antippen, dann „+ Abzweig" für eine Options-Route ab diesem Punkt.</span>
@@ -397,6 +411,7 @@
       <option value="p2n">Play → Name</option>
     </select>
     <select id="fcPos"></select>
+    <button id="fcPrint" title="Flashcards drucken">🖨</button>
     <span id="fcProg"></span>
   </div>
   <div id="fcWrap">
@@ -414,6 +429,7 @@
     <button id="gdExit">✕</button>
     <b id="gdTitle"></b>
     <div class="spacer"></div>
+    <button id="gdPrint" title="Wristband drucken">🖨</button>
     <button id="gdReset">Statistik zurücksetzen</button>
   </div>
   <div id="gdGridWrap"><div id="gdGrid"></div></div>
@@ -467,7 +483,11 @@ de:{
   edit:'✏️ Bearbeiten', editOn:'✏️ Bearbeiten (an)', anim:'▶ Abspielen',
   defOff:'— aus —', zones:'Zonen', printBtn:'🖨 Drucken',
   selLbl:'Auswahl:', tapPlayer:'Spieler antippen', player:'Spieler', point:'Punkt', line:'Linie',
-  addPt:'+ Punkt', delPt:'– Punkt', addBranch:'+ Abzweig', delLine:'Linie löschen', dashed:'Gestrichelt',
+  addPt:'+ Punkt', delPt:'– Punkt', addBranch:'+ Abzweig', delLine:'Linie löschen',
+  stSolid:'durchgezogen', stDash:'gestrichelt', stDot:'gepunktet', stWave:'gewellt (Motion)',
+  styleT:'Linienstil der ausgewählten Linie',
+  lwT:'Liniendicke aller Routen (global)',
+  lwThin:'Linien: dünn', lwNorm:'Linien: normal', lwThick:'Linien: dick', lwXThick:'Linien: sehr dick',
   endA:'Ende: Pfeil', endO:'Ende: Punkt', endN:'Ende: offen',
   tip:'Tipp: Punkt auf der Route antippen, dann „+ Abzweig" für eine Options-Route ab diesem Punkt.',
   hint:'Änderungen werden automatisch gespeichert', playNamePh:'Play-Name',
@@ -492,7 +512,8 @@ de:{
   def_c1:'Cover 1 (Hybrid) · CB/LB/S = Zone · Backside-CB: Man, wenn der Receiver tief geht',
   def_c2:'Cover 2 · CB = Flat · S = Deep Half',
   def_c3:'Cover 3 (Diamond) · LB = Hole · CB/S = Deep Thirds',
-  mirrorT:'Play links/rechts spiegeln', undoT:'Rückgängig (Strg+Z)', redoT:'Wiederholen (Strg+Y)',
+  mirrorT:'Play links/rechts spiegeln', mirrorBtn:'⇋ Flip Play',
+  undoT:'Rückgängig (Strg+Z)', redoT:'Wiederholen (Strg+Y)',
   snapT:'Einrasten auf halbe Yards', notesT:'Notizen & Tags',
   notePh:'Notizen zum Play (Coaching Points, QB-Reads …)', tagsLbl:'Tags:',
   tagsPh:'z.B. Redzone, 3rd Down (Komma-getrennt)', allTags:'🏷 Alle Plays', tUp:'Nach oben', tDown:'Nach unten',
@@ -513,7 +534,11 @@ en:{
   edit:'✏️ Edit', editOn:'✏️ Edit (on)', anim:'▶ Play',
   defOff:'— off —', zones:'Zones', printBtn:'🖨 Print',
   selLbl:'Selection:', tapPlayer:'Tap a player', player:'Player', point:'Point', line:'Line',
-  addPt:'+ Point', delPt:'– Point', addBranch:'+ Branch', delLine:'Delete line', dashed:'Dashed',
+  addPt:'+ Point', delPt:'– Point', addBranch:'+ Branch', delLine:'Delete line',
+  stSolid:'solid', stDash:'dashed', stDot:'dotted', stWave:'wavy (motion)',
+  styleT:'Line style of the selected line',
+  lwT:'Line width of all routes (global)',
+  lwThin:'Lines: thin', lwNorm:'Lines: normal', lwThick:'Lines: thick', lwXThick:'Lines: extra thick',
   endA:'End: arrow', endO:'End: dot', endN:'End: open',
   tip:'Tip: tap a point on the route, then "+ Branch" to add an option route from that point.',
   hint:'Changes are saved automatically', playNamePh:'Play name',
@@ -538,7 +563,8 @@ en:{
   def_c1:'Cover 1 (hybrid) · CB/LB/S = zone · backside CB: man if the receiver goes deep',
   def_c2:'Cover 2 · CB = flat · S = deep half',
   def_c3:'Cover 3 (diamond) · LB = hole · CB/S = deep thirds',
-  mirrorT:'Mirror play left/right', undoT:'Undo (Ctrl+Z)', redoT:'Redo (Ctrl+Y)',
+  mirrorT:'Mirror play left/right', mirrorBtn:'⇋ Flip play',
+  undoT:'Undo (Ctrl+Z)', redoT:'Redo (Ctrl+Y)',
   snapT:'Snap to half yards', notesT:'Notes & tags',
   notePh:'Play notes (coaching points, QB reads …)', tagsLbl:'Tags:',
   tagsPh:'e.g. redzone, 3rd down (comma-separated)', allTags:'🏷 All plays', tUp:'Move up', tDown:'Move down',
@@ -566,13 +592,23 @@ function applyLang(){
   t('btnDelPt',T('delPt')); ti('btnDelPt',T('tDelPt'));
   t('btnAddLine',T('addBranch')); ti('btnAddLine',T('tAddBranch'));
   t('btnDelLine',T('delLine')); ti('btnDelLine',T('tDelLine'));
-  t('btnDash',T('dashed'));
+  ti('styleSel',T('styleT'));
+  document.querySelector('#styleSel option[value="solid"]').textContent = T('stSolid');
+  document.querySelector('#styleSel option[value="dash"]').textContent = T('stDash');
+  document.querySelector('#styleSel option[value="dot"]').textContent = T('stDot');
+  document.querySelector('#styleSel option[value="wave"]').textContent = T('stWave');
+  ti('lwSel',T('lwT'));
+  document.querySelector('#lwSel option[value="3"]').textContent = T('lwThin');
+  document.querySelector('#lwSel option[value="4"]').textContent = T('lwNorm');
+  document.querySelector('#lwSel option[value="5.5"]').textContent = T('lwThick');
+  document.querySelector('#lwSel option[value="7"]').textContent = T('lwXThick');
   document.querySelector('#endSel option[value="a"]').textContent = T('endA');
   document.querySelector('#endSel option[value="o"]').textContent = T('endO');
   document.querySelector('#endSel option[value="n"]').textContent = T('endN');
   t('editTip',T('tip')); t('hint',T('hint'));
   document.getElementById('playName').placeholder = T('playNamePh');
   ti('btnReset',T('tReset')); ti('btnExport',T('tExport')); ti('btnPrint',T('tPrint')); ti('btnZones',T('tZones'));
+  ti('btnPrintEd',T('tPrint')); ti('fcPrint',T('tPrint')); ti('gdPrint',T('tPrint'));
   ti('slotSel',T('tSlotSel')); ti('slotNew',T('tSlotNew')); ti('slotRen',T('tSlotRen'));
   ti('slotDup',T('tSlotDup')); ti('slotDel',T('tSlotDel'));
   t('prTitle',T('prTitle')); t('prSizeLbl',T('sizeLbl'));
@@ -587,7 +623,9 @@ function applyLang(){
   t('btnShare',T('shareBtn')); t('btnHelp',T('helpBtn'));
   document.querySelector('#prLay option[value="flash"]').textContent = T('layFlash');
   t('fcFlip',T('fcFlip')); t('fcKnew',T('fcKnew')); t('fcAgain',T('fcAgain')); t('fcRestart',T('fcRestart'));
-  ti('btnMirror',T('mirrorT')); ti('btnUndo',T('undoT')); ti('btnRedo',T('redoT'));
+  ti('btnMirror',T('mirrorT'));
+  t('btnMirrorTop',T('mirrorBtn')); ti('btnMirrorTop',T('mirrorT'));
+  ti('btnUndo',T('undoT')); ti('btnRedo',T('redoT'));
   ti('btnSnap',T('snapT')); ti('btnNotes',T('notesT')); ti('btnPinDef',T('pinT')); ti('btnShare',T('shareT'));
   t('btnGameday',T('gameday')); t('gdReset',T('gdReset')); t('gdBack',T('gdBack'));
   document.getElementById('noteTa').placeholder = T('notePh');
@@ -615,7 +653,7 @@ let state = {
   slots: [freshSlot('Playbook 1')], slot: 0,
   mode: 'view', selP: null, selH: null, selD: null,   // selH = {li, pi}, selD = Defense-Index
   logo: null, teamName: 'Rhinos', lang: 'de',
-  snap: true, tagFilter: '', showNotes: false,
+  snap: true, tagFilter: '', showNotes: false, lineW: 4,
   print: {preset:'gross', w:127, h:76, grid:'4x2', logo:true, layout:'wrist', pos:'all', def:false}
 };
 function SLOT(){ return state.slots[state.slot]; }
@@ -628,6 +666,7 @@ try{
       state.logo = s.logo || null; state.teamName = s.teamName || 'Rhinos';
       state.lang = s.lang || 'de';
       state.snap = s.snap !== false;
+      state.lineW = s.lineW || 4;
       if(s.print) state.print = Object.assign(state.print, s.print);
     } else if(s.plays && s.plays.length){   // altes Ein-Playbook-Format migrieren
       state.slots = [{name:'Playbook 1', plays:s.plays,
@@ -649,7 +688,8 @@ function save(){
   clearTimeout(saveTimer);
   saveTimer = setTimeout(()=>{ try{
     localStorage.setItem(LS_KEY, JSON.stringify({slots:state.slots, slot:state.slot,
-      logo:state.logo, teamName:state.teamName, print:state.print, lang:state.lang, snap:state.snap}));
+      logo:state.logo, teamName:state.teamName, print:state.print, lang:state.lang,
+      snap:state.snap, lineW:state.lineW}));
   }catch(e){} }, 300);
 }
 
@@ -693,6 +733,31 @@ const COLORS = {X:'#a13a9b', Y:'#cf3131', C:'#2f74c4', Z:'#e2892f', Q:'#4d565e'}
 const wrap = document.getElementById('fieldWrap');
 function esc(s){return String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]))}
 
+/* Globale Liniendicke */
+function GLW(){ return state.lineW || 4; }
+function LWF(){ return GLW()/4; }
+/* Linienstile: solid | dash | dot | wave (ln.d bleibt aus Kompatibilität erhalten) */
+function styleOf(ln){ return ln.s || (ln.d ? 'dash' : 'solid'); }
+function dashFor(st, sc){
+  if(st==='dash') return (3*sc).toFixed(1)+' '+(9*sc).toFixed(1);
+  if(st==='dot')  return '0.1 '+(8*sc).toFixed(1);
+  return null;
+}
+function wavyD(pts, amp){
+  let d = 'M'+pts[0][0].toFixed(1)+' '+pts[0][1].toFixed(1);
+  for(let i=1; i<pts.length; i++){
+    const a=pts[i-1], b=pts[i];
+    const L = Math.hypot(b[0]-a[0], b[1]-a[1]) || 1;
+    const n = Math.max(2, Math.round(L/(amp*3)));
+    const px = -(b[1]-a[1])/L, py = (b[0]-a[0])/L;
+    for(let k=1; k<=n; k++){
+      const t0=(k-0.5)/n, t1=k/n, sgn = k%2 ? 1 : -1;
+      d += ' Q'+(a[0]+(b[0]-a[0])*t0+px*amp*sgn).toFixed(1)+' '+(a[1]+(b[1]-a[1])*t0+py*amp*sgn).toFixed(1)
+         + ' '+(a[0]+(b[0]-a[0])*t1).toFixed(1)+' '+(a[1]+(b[1]-a[1])*t1).toFixed(1);
+    }
+  }
+  return d;
+}
 function arrowHead(a,b,color,s=11){
   const dx=b[0]-a[0], dy=b[1]-a[1], L=Math.hypot(dx,dy)||1;
   const ux=dx/L, uy=dy/L;
@@ -707,10 +772,13 @@ function render(){
   // Feld
   s += `<rect width="${W}" height="${H}" fill="#f4f6f3"/>`;
   s += `<rect width="${W}" height="${H}" fill="none" stroke="#c9d2c9" stroke-width="2"/>`;
+  // Vertikale Viertel-Linien (25 / 50 / 75 % der Feldbreite)
+  for(const qx of [25,50,75])
+    s += `<line x1="${FX(qx)}" y1="8" x2="${FX(qx)}" y2="${H-8}" stroke="#e2e8e2" stroke-width="1.2"/>`;
   for(let y=-10; y<=20; y+=1){
     if(y===0) continue;
     const five = y%5===0;
-    s += `<line x1="8" y1="${FY(y)}" x2="${W-8}" y2="${FY(y)}" stroke="${five?'#c8d2c8':'#e7ece7'}" stroke-width="${five?2.5:1}"/>`;
+    s += `<line x1="8" y1="${FY(y)}" x2="${W-8}" y2="${FY(y)}" stroke="${five?'#bfcabf':'#e0e6e0'}" stroke-width="${five?3:1.6}"/>`;
     if(five) s += `<text x="${W-12}" y="${FY(y)-4}" font-size="10" fill="#aab6aa" text-anchor="end">${y>0?'+':''}${y}</text>`;
   }
   // LOS
@@ -731,14 +799,17 @@ function render(){
   play.lines.forEach((ln,li)=>{
     const col = '#222';
     const pts = ln.pts.map(p=>[FX(p[0]),FY(p[1])]);
-    const dAttr = pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const st = styleOf(ln);
+    const dAttr = st==='wave' ? wavyD(pts,5)
+      : pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const da = dashFor(st, LWF());
     const sel = (state.mode==='edit' && state.selP===ln.p);
-    s += `<path d="${dAttr}" fill="none" stroke="${sel?'#1668c9':col}" stroke-width="4"
-      stroke-linejoin="round" stroke-linecap="round" ${ln.d?'stroke-dasharray="3 9"':''}/>`;
+    s += `<path d="${dAttr}" fill="none" stroke="${sel?'#1668c9':col}" stroke-width="${GLW()}"
+      stroke-linejoin="round" stroke-linecap="round" ${da?`stroke-dasharray="${da}"`:''}/>`;
     if(pts.length>1){
       const a=pts[pts.length-2], b=pts[pts.length-1];
-      if(ln.e==='a') s += arrowHead(a,b, sel?'#1668c9':col);
-      else if(ln.e==='o') s += `<circle cx="${b[0]}" cy="${b[1]}" r="6" fill="${sel?'#1668c9':col}"/>`;
+      if(ln.e==='a') s += arrowHead(a,b, sel?'#1668c9':col, 11*Math.sqrt(LWF()));
+      else if(ln.e==='o') s += `<circle cx="${b[0]}" cy="${b[1]}" r="${6*Math.sqrt(LWF())}" fill="${sel?'#1668c9':col}"/>`;
     }
   });
 
@@ -887,9 +958,16 @@ function renderEditBar(){
     if(document.activeElement!==lblIn) lblIn.value = '';
   }
   const ln = activeLine();
-  document.getElementById('btnDash').classList.toggle('on', !!(ln && ln.d));
-  if(ln) document.getElementById('endSel').value = ln.e;
+  if(ln){
+    document.getElementById('styleSel').value = styleOf(ln);
+    document.getElementById('endSel').value = ln.e;
+  }
+  document.getElementById('lwSel').value = String(GLW());
 }
+document.getElementById('lwSel').onchange = ev=>{
+  state.lineW = parseFloat(ev.target.value) || 4;
+  render(); save();
+};
 document.getElementById('lblIn').oninput = ev=>{
   const v = ev.target.value.trim();
   if(state.selP){
@@ -1069,10 +1147,12 @@ document.getElementById('btnDelLine').onclick = ()=>{
   pushUndo();
   play.lines.splice(li,1); state.selH=null; render(); save();
 };
-document.getElementById('btnDash').onclick = ()=>{
+document.getElementById('styleSel').onchange = ev=>{
   const ln = activeLine(); if(!ln) return;
   pushUndo();
-  ln.d = ln.d?0:1; render(); save();
+  ln.s = ev.target.value;
+  ln.d = ev.target.value==='dash' ? 1 : 0;   // Kompatibilität zu älteren Exporten
+  render(); save();
 };
 document.getElementById('endSel').onchange = ev=>{
   const ln = activeLine(); if(!ln) return;
@@ -1082,14 +1162,16 @@ document.getElementById('endSel').onchange = ev=>{
 document.getElementById('btnUndo').onclick = doUndo;
 document.getElementById('btnRedo').onclick = doRedo;
 document.getElementById('btnSnap').onclick = ()=>{ state.snap=!state.snap; render(); save(); };
-document.getElementById('btnMirror').onclick = ()=>{
+function mirrorPlay(){
   pushUndo();
   const play = SLOT().plays[SLOT().cur];
   for(const pid in play.pos) play.pos[pid][0] = +(100-play.pos[pid][0]).toFixed(2);
   play.lines.forEach(l=> l.pts = l.pts.map(p=>[+(100-p[0]).toFixed(2), p[1]]));
   if(play.defOverride) play.defOverride.players.forEach(d=> d.x = +(100-d.x).toFixed(2));
   render(); save();
-};
+}
+document.getElementById('btnMirror').onclick = mirrorPlay;
+document.getElementById('btnMirrorTop').onclick = mirrorPlay;
 document.getElementById('btnNotes').onclick = ()=>{ state.showNotes=!state.showNotes; render(); };
 document.getElementById('noteTa').oninput = ev=>{ SLOT().plays[SLOT().cur].note = ev.target.value; save(); };
 document.getElementById('tagsIn').oninput = ev=>{ SLOT().plays[SLOT().cur].tags = ev.target.value; save(); renderSidebar(); };
@@ -1127,7 +1209,8 @@ document.getElementById('btnAnim').onclick = ()=>{
   // Haupt-Route je Spieler: erste Linie (in Feld-px)
   const runners = [];
   for(const pid of ['X','Y','C','Z','Q']){
-    const ln = play.lines.find(l=>l.p===pid && !l.d);
+    const ln = play.lines.find(l=>l.p===pid && ['solid','wave'].includes(styleOf(l))) ||
+               play.lines.find(l=>l.p===pid);
     if(!ln) continue;
     const pts = ln.pts.map(p=>[FX(p[0]),FY(p[1])]);
     let len=0; const segs=[];
@@ -1188,15 +1271,19 @@ function playThumbSVG(play, num, hl){
   s += `<line x1="0" y1="${TY(0)}" x2="240" y2="${TY(0)}" stroke="#aaa" stroke-width="2"/>`;
   for(const ln of play.lines){
     const col = hl ? (ln.p===hl ? COLORS[hl] : '#c3c9ce') : '#111';
-    const wd = hl && ln.p===hl ? 3.4 : 2.6;
+    const wd = (hl && ln.p===hl ? 3.4 : 2.6) * LWF();
     const pts = ln.pts.map(p=>[TX(p[0]),TY(p[1])]);
-    s += `<path d="${pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')}"
+    const st = styleOf(ln);
+    const dAttr = st==='wave' ? wavyD(pts,3)
+      : pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const da = dashFor(st, 0.6*LWF());
+    s += `<path d="${dAttr}"
       fill="none" stroke="${col}" stroke-width="${wd}" stroke-linejoin="round" stroke-linecap="round"
-      ${ln.d?'stroke-dasharray="2.5 5"':''}/>`;
+      ${da?`stroke-dasharray="${da}"`:''}/>`;
     if(pts.length>1){
       const a=pts[pts.length-2], b=pts[pts.length-1];
-      if(ln.e==='a') s += arrowHead(a,b,col,6.5);
-      else if(ln.e==='o') s += `<circle cx="${b[0]}" cy="${b[1]}" r="3.5" fill="${col}"/>`;
+      if(ln.e==='a') s += arrowHead(a,b,col,6.5*Math.sqrt(LWF()));
+      else if(ln.e==='o') s += `<circle cx="${b[0]}" cy="${b[1]}" r="${3.5*Math.sqrt(LWF())}" fill="${col}"/>`;
     }
   }
   for(const pid of ['X','Y','C','Z','Q']){
@@ -1238,10 +1325,12 @@ function buildCards(){
 function bigPlaySVG(play, withDef, hl){
   let s = `<svg viewBox="0 30 600 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">`;
   s += `<rect y="30" width="600" height="700" fill="#fff"/>`;
+  for(const qx of [25,50,75])
+    s += `<line x1="${FX(qx)}" y1="38" x2="${FX(qx)}" y2="722" stroke="#f0f0f0" stroke-width="1.2"/>`;
   for(let y=-9; y<=19; y+=1){
     if(y===0) continue;
     const five = y%5===0;
-    s += `<line x1="8" y1="${FY(y)}" x2="${W-8}" y2="${FY(y)}" stroke="${five?'#ccc':'#eee'}" stroke-width="${five?2:1}"/>`;
+    s += `<line x1="8" y1="${FY(y)}" x2="${W-8}" y2="${FY(y)}" stroke="${five?'#c4c4c4':'#e8e8e8'}" stroke-width="${five?2.5:1.5}"/>`;
     if(five) s += `<text x="${W-12}" y="${FY(y)-4}" font-size="10" fill="#999" text-anchor="end">${y>0?'+':''}${y}</text>`;
   }
   s += `<line x1="0" y1="${FY(0)}" x2="${W}" y2="${FY(0)}" stroke="#666" stroke-width="4"/>`;
@@ -1262,13 +1351,17 @@ function bigPlaySVG(play, withDef, hl){
   for(const ln of play.lines){
     const col = hl ? (ln.p===hl ? COLORS[hl] : '#c3c9ce') : '#222';
     const pts = ln.pts.map(p=>[FX(p[0]),FY(p[1])]);
-    s += `<path d="${pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')}"
-      fill="none" stroke="${col}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"
-      ${ln.d?'stroke-dasharray="3 9"':''}/>`;
+    const st = styleOf(ln);
+    const dAttr = st==='wave' ? wavyD(pts,5)
+      : pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const da = dashFor(st, LWF());
+    s += `<path d="${dAttr}"
+      fill="none" stroke="${col}" stroke-width="${GLW()}" stroke-linejoin="round" stroke-linecap="round"
+      ${da?`stroke-dasharray="${da}"`:''}/>`;
     if(pts.length>1){
       const a=pts[pts.length-2], b=pts[pts.length-1];
-      if(ln.e==='a') s += arrowHead(a,b,col);
-      else if(ln.e==='o') s += `<circle cx="${b[0]}" cy="${b[1]}" r="6" fill="${col}"/>`;
+      if(ln.e==='a') s += arrowHead(a,b,col,11*Math.sqrt(LWF()));
+      else if(ln.e==='o') s += `<circle cx="${b[0]}" cy="${b[1]}" r="${6*Math.sqrt(LWF())}" fill="${col}"/>`;
     }
   }
   for(const pid of ['X','Y','C','Z','Q']){
@@ -1342,9 +1435,15 @@ function refreshPrintUI(){
 document.getElementById('prLay').onchange = ev=>{ state.print.layout = ev.target.value; refreshPrintUI(); save(); };
 document.getElementById('prPos').onchange = ev=>{ state.print.pos = ev.target.value; refreshPrintUI(); save(); };
 document.getElementById('prDef').onchange = ev=>{ state.print.def = ev.target.checked; refreshPrintUI(); save(); };
-document.getElementById('btnPrint').onclick = ()=>{
-  document.getElementById('printOv').classList.add('show'); refreshPrintUI();
-};
+function openPrint(layout){
+  if(layout) state.print.layout = layout;
+  document.getElementById('printOv').classList.add('show');
+  refreshPrintUI();
+}
+document.getElementById('btnPrint').onclick = ()=>openPrint();
+document.getElementById('btnPrintEd').onclick = ()=>openPrint();
+document.getElementById('fcPrint').onclick = ()=>openPrint('flash');
+document.getElementById('gdPrint').onclick = ()=>openPrint('wrist');
 document.getElementById('prClose').onclick = ()=>document.getElementById('printOv').classList.remove('show');
 document.getElementById('printOv').onclick = ev=>{
   if(ev.target.id==='printOv') document.getElementById('printOv').classList.remove('show');
@@ -1475,7 +1574,7 @@ de: `
 
 <h4>Plays bearbeiten</h4>
 <p><span class="k">✏️ Bearbeiten</span> aktivieren, dann Spieler antippen – alle Routenpunkte werden sichtbar. Spieler und Punkte einfach ziehen. Ein Punkt wird durch Antippen ausgewählt (orange).</p>
-<p><span class="k">+ Punkt</span> fügt nach dem gewählten Punkt einen Zwischenpunkt ein. <span class="k">+ Abzweig</span> startet eine neue Linie am gewählten Punkt – so entstehen Options-Routen. <span class="k">Gestrichelt</span> und <span class="k">Ende: …</span> gelten für die Linie der Auswahl.</p>
+<p><span class="k">+ Punkt</span> fügt nach dem gewählten Punkt einen Zwischenpunkt ein. <span class="k">+ Abzweig</span> startet eine neue Linie am gewählten Punkt – so entstehen Options-Routen. Für die Linie der Auswahl gibt es vier Stile – durchgezogen (Route), gestrichelt (Option), gepunktet (Pass/Pitch) und gewellt (Motion/Shift) – sowie das Linienende (Pfeil/Punkt/offen).</p>
 <p><span class="k">↶</span>/<span class="k">↷</span> = Rückgängig/Wiederholen (auch Strg+Z / Strg+Y). <span class="k">🧲</span> rastet Punkte auf halbe Yards ein. <span class="k">⇋</span> (Sidebar unten) spiegelt das Play links/rechts.</p>
 <p>Im Feld <span class="k">Name:</span> lässt sich die Bezeichnung des ausgewählten Spielers ändern (max. 3 Zeichen) – Offense-Namen gelten für den ganzen Slot, Defense-Namen pro Verteidiger. Dazu im Bearbeiten-Modus den Spieler bzw. Verteidiger antippen.</p>
 
@@ -1520,7 +1619,7 @@ en: `
 
 <h4>Editing plays</h4>
 <p>Enable <span class="k">✏️ Edit</span>, then tap a player – all route points appear. Drag players and points. Tap a point to select it (orange).</p>
-<p><span class="k">+ Point</span> inserts a point after the selected one. <span class="k">+ Branch</span> starts a new line at the selected point – that's how you build option routes. <span class="k">Dashed</span> and <span class="k">End: …</span> apply to the selected line.</p>
+<p><span class="k">+ Point</span> inserts a point after the selected one. <span class="k">+ Branch</span> starts a new line at the selected point – that's how you build option routes. The selected line offers four styles – solid (route), dashed (option), dotted (pass/pitch) and wavy (motion/shift) – plus the line ending (arrow/dot/open).</p>
 <p><span class="k">↶</span>/<span class="k">↷</span> = undo/redo (also Ctrl+Z / Ctrl+Y). <span class="k">🧲</span> snaps points to half yards. <span class="k">⇋</span> (sidebar bottom) mirrors the play left/right.</p>
 <p>The <span class="k">Name:</span> field changes the label of the selected player (max. 3 characters) – offense labels apply to the whole slot, defense labels per defender. In edit mode, just tap the player or defender first.</p>
 
