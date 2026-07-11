@@ -54,7 +54,7 @@
 
   /* Edit panel */
   #editBar{display:none;align-items:center;gap:6px;padding:8px 12px;background:var(--panel);
-    border-top:1px solid var(--line);flex-wrap:wrap}
+    border-bottom:1px solid var(--line);flex-wrap:wrap}
   #editBar.show{display:flex}
   #editBar .lbl{color:var(--dim);font-size:12px}
   #selInfo{font-weight:700;min-width:90px}
@@ -149,13 +149,12 @@
       <button id="btnExport" title="Playbook als JSON-Datei sichern">Export</button>
       <button id="btnImport">Import</button>
       <button id="btnReset" class="warn" title="Alles auf die Standard-Plays zurücksetzen">Reset</button>
+      <button id="btnLang" title="Sprache / Language">EN</button>
       <input type="file" id="fileIn" accept=".json" style="display:none">
     </div>
 
-    <div id="fieldWrap"></div>
-
     <div id="editBar">
-      <span class="lbl">Auswahl:</span><span id="selInfo">–</span>
+      <span class="lbl" id="selLbl">Auswahl:</span><span id="selInfo">–</span>
       <div class="sep"></div>
       <button id="btnAddPt" title="Fügt nach dem ausgewählten Punkt einen Zwischenpunkt ein; ohne Auswahl wird die Route am Ende verlängert">+ Punkt</button>
       <button id="btnDelPt" title="Entfernt den ausgewählten Punkt">– Punkt</button>
@@ -169,36 +168,38 @@
         <option value="n">Ende: offen</option>
       </select>
       <div class="spacer"></div>
-      <span class="lbl">Tipp: Punkt auf der Route antippen, dann „+ Abzweig" für eine Options-Route ab diesem Punkt.</span>
+      <span class="lbl" id="editTip">Tipp: Punkt auf der Route antippen, dann „+ Abzweig" für eine Options-Route ab diesem Punkt.</span>
     </div>
+
+    <div id="fieldWrap"></div>
   </div>
 </div>
 <div id="printOv">
   <div id="printPanel">
-    <h3>🖨 QB-Wristband drucken</h3>
+    <h3 id="prTitle">🖨 QB-Wristband drucken</h3>
     <div class="pRow">
-      <label>Größe:</label>
+      <label id="prSizeLbl">Größe:</label>
       <select id="prSize">
         <option value="gross">Groß (127 × 76 mm)</option>
         <option value="klein">Klein (102 × 60 mm)</option>
       </select>
       <input type="number" id="prW" min="40" max="200"> ×
       <input type="number" id="prH" min="30" max="150">
-      <label>mm pro Fenster (anpassbar)</label>
+      <label id="prMmLbl">mm pro Fenster (anpassbar)</label>
     </div>
     <div class="pRow">
-      <label>Plays pro Fenster:</label>
+      <label id="prGridLbl">Plays pro Fenster:</label>
       <select id="prGrid">
         <option value="2x2">4 (2×2)</option>
         <option value="3x2">6 (3×2)</option>
         <option value="4x2">8 (4×2)</option>
         <option value="4x3">12 (4×3)</option>
       </select>
-      <label>→ 3 Fenster = <span id="prCount"></span> Plays (in Listen-Reihenfolge)</label>
+      <label id="prCountLbl">→ 3 Fenster = <span id="prCount"></span> Plays (in Listen-Reihenfolge)</label>
     </div>
     <div class="pRow">
-      <label>Team:</label><input type="text" id="prTeam" style="width:130px">
-      <label><input type="checkbox" id="prLogo"> Logo drucken</label>
+      <label id="prTeamLbl">Team:</label><input type="text" id="prTeam" style="width:130px">
+      <label><input type="checkbox" id="prLogo"> <span id="prLogoTxt">Logo drucken</span></label>
       <button id="prLogoUp">Logo wählen…</button>
       <button id="prLogoRm" class="warn">Logo entfernen</button>
       <input type="file" id="logoIn" accept="image/*" style="display:none">
@@ -248,11 +249,101 @@ const DEF_PRESETS = {
     {l:'LB',x:50,y:5,z:[12,2.6]},
     {l:'CB',x:18,y:12,z:[12,3.4]},{l:'S',x:50,y:14,z:[12,3.4]},{l:'CB',x:82,y:12,z:[12,3.4]}]
 };
-const DEF_INFO = {
-  c1:'Cover 1 (Hybrid) · CB/LB/S = Zone · Backside-CB: Man, wenn der Receiver tief geht',
-  c2:'Cover 2 · CB = Flat · S = Deep Half',
-  c3:'Cover 3 (Diamond) · LB = Hole · CB/S = Deep Thirds'
-};
+/* ================= Sprache / Language ================= */
+const I18N = {
+de:{
+  newBtn:'+ Neu', dupBtn:'Duplizieren', delBtn:'Löschen',
+  edit:'✏️ Bearbeiten', editOn:'✏️ Bearbeiten (an)', anim:'▶ Abspielen',
+  defOff:'— aus —', zones:'Zonen', printBtn:'🖨 Wristband',
+  selLbl:'Auswahl:', tapPlayer:'Spieler antippen', player:'Spieler', point:'Punkt', line:'Linie',
+  addPt:'+ Punkt', delPt:'– Punkt', addBranch:'+ Abzweig', delLine:'Linie löschen', dashed:'Gestrichelt',
+  endA:'Ende: Pfeil', endO:'Ende: Punkt', endN:'Ende: offen',
+  tip:'Tipp: Punkt auf der Route antippen, dann „+ Abzweig" für eine Options-Route ab diesem Punkt.',
+  hint:'Änderungen werden automatisch gespeichert', playNamePh:'Play-Name',
+  tAddPt:'Fügt nach dem ausgewählten Punkt einen Zwischenpunkt ein; ohne Auswahl wird die Route am Ende verlängert',
+  tDelPt:'Entfernt den ausgewählten Punkt',
+  tAddBranch:'Neue Linie ab dem ausgewählten Punkt – so entstehen Abzweigungen/Options-Routen',
+  tDelLine:'Löscht die Linie des ausgewählten Punkts',
+  tReset:'Alles auf die Standard-Plays zurücksetzen', tExport:'Playbook als JSON-Datei sichern',
+  tPrint:'QB-Wristband-Playsheets drucken', tZones:'Zonen anzeigen',
+  tSlotSel:'Speicher-Slot wählen', tSlotNew:'Neuer Slot', tSlotRen:'Slot umbenennen',
+  tSlotDup:'Slot duplizieren', tSlotDel:'Slot löschen',
+  prTitle:'🖨 QB-Wristband drucken', sizeLbl:'Größe:',
+  large:'Groß (127 × 76 mm)', small:'Klein (102 × 60 mm)', mmLbl:'mm pro Fenster (anpassbar)',
+  perWin:'Plays pro Fenster:', winEq:'→ 3 Fenster = ', winEq2:' Plays (in Listen-Reihenfolge)',
+  teamLbl:'Team:', printLogo:'Logo drucken', chooseLogo:'Logo wählen…', rmLogo:'Logo entfernen',
+  close:'Schließen', doPrint:'🖨 Drucken', window:'Fenster',
+  newSlotPrompt:'Name des neuen Slots:', gameplan:'Gameplan', renSlot:'Slot umbenennen:',
+  copySuffix:' (Kopie)', lastSlot:'Der letzte Slot kann nicht gelöscht werden.',
+  delSlotQ:'Slot "{n}" mit allen Plays löschen?', delPlayQ:'Play "{n}" löschen?',
+  resetQ:'Alle Änderungen verwerfen und die Standard-Plays wiederherstellen?',
+  newPlay:'Neues Play', invalidFile:'Ungültige Datei.', readErr:'Datei konnte nicht gelesen werden.',
+  def_c1:'Cover 1 (Hybrid) · CB/LB/S = Zone · Backside-CB: Man, wenn der Receiver tief geht',
+  def_c2:'Cover 2 · CB = Flat · S = Deep Half',
+  def_c3:'Cover 3 (Diamond) · LB = Hole · CB/S = Deep Thirds'
+},
+en:{
+  newBtn:'+ New', dupBtn:'Duplicate', delBtn:'Delete',
+  edit:'✏️ Edit', editOn:'✏️ Edit (on)', anim:'▶ Play',
+  defOff:'— off —', zones:'Zones', printBtn:'🖨 Wristband',
+  selLbl:'Selection:', tapPlayer:'Tap a player', player:'Player', point:'Point', line:'Line',
+  addPt:'+ Point', delPt:'– Point', addBranch:'+ Branch', delLine:'Delete line', dashed:'Dashed',
+  endA:'End: arrow', endO:'End: dot', endN:'End: open',
+  tip:'Tip: tap a point on the route, then "+ Branch" to add an option route from that point.',
+  hint:'Changes are saved automatically', playNamePh:'Play name',
+  tAddPt:'Inserts a point after the selected one; without a selection the route is extended at the end',
+  tDelPt:'Removes the selected point',
+  tAddBranch:'New line starting at the selected point – this is how you create branches/option routes',
+  tDelLine:'Deletes the line of the selected point',
+  tReset:'Reset everything to the default plays', tExport:'Save playbook as a JSON file',
+  tPrint:'Print QB wristband playsheets', tZones:'Show zones',
+  tSlotSel:'Choose save slot', tSlotNew:'New slot', tSlotRen:'Rename slot',
+  tSlotDup:'Duplicate slot', tSlotDel:'Delete slot',
+  prTitle:'🖨 Print QB wristband', sizeLbl:'Size:',
+  large:'Large (127 × 76 mm)', small:'Small (102 × 60 mm)', mmLbl:'mm per window (adjustable)',
+  perWin:'Plays per window:', winEq:'→ 3 windows = ', winEq2:' plays (in list order)',
+  teamLbl:'Team:', printLogo:'Print logo', chooseLogo:'Choose logo…', rmLogo:'Remove logo',
+  close:'Close', doPrint:'🖨 Print', window:'Window',
+  newSlotPrompt:'Name of the new slot:', gameplan:'Game plan', renSlot:'Rename slot:',
+  copySuffix:' (copy)', lastSlot:'The last slot cannot be deleted.',
+  delSlotQ:'Delete slot "{n}" with all its plays?', delPlayQ:'Delete play "{n}"?',
+  resetQ:'Discard all changes and restore the default plays?',
+  newPlay:'New play', invalidFile:'Invalid file.', readErr:'Could not read the file.',
+  def_c1:'Cover 1 (hybrid) · CB/LB/S = zone · backside CB: man if the receiver goes deep',
+  def_c2:'Cover 2 · CB = flat · S = deep half',
+  def_c3:'Cover 3 (diamond) · LB = hole · CB/S = deep thirds'
+}};
+function T(k){ return (I18N[state.lang]||I18N.de)[k] || I18N.de[k] || k; }
+function applyLang(){
+  const t=(id,s)=>{const el=document.getElementById(id); if(el) el.textContent=s;};
+  const ti=(id,s)=>{const el=document.getElementById(id); if(el) el.title=s;};
+  t('btnNew',T('newBtn')); t('btnDup',T('dupBtn')); t('btnDel',T('delBtn'));
+  t('btnAnim',T('anim')); t('btnZones',T('zones')); t('btnPrint',T('printBtn'));
+  document.querySelector('#defSel option[value="off"]').textContent = T('defOff');
+  t('selLbl',T('selLbl'));
+  t('btnAddPt',T('addPt')); ti('btnAddPt',T('tAddPt'));
+  t('btnDelPt',T('delPt')); ti('btnDelPt',T('tDelPt'));
+  t('btnAddLine',T('addBranch')); ti('btnAddLine',T('tAddBranch'));
+  t('btnDelLine',T('delLine')); ti('btnDelLine',T('tDelLine'));
+  t('btnDash',T('dashed'));
+  document.querySelector('#endSel option[value="a"]').textContent = T('endA');
+  document.querySelector('#endSel option[value="o"]').textContent = T('endO');
+  document.querySelector('#endSel option[value="n"]').textContent = T('endN');
+  t('editTip',T('tip')); t('hint',T('hint'));
+  document.getElementById('playName').placeholder = T('playNamePh');
+  ti('btnReset',T('tReset')); ti('btnExport',T('tExport')); ti('btnPrint',T('tPrint')); ti('btnZones',T('tZones'));
+  ti('slotSel',T('tSlotSel')); ti('slotNew',T('tSlotNew')); ti('slotRen',T('tSlotRen'));
+  ti('slotDup',T('tSlotDup')); ti('slotDel',T('tSlotDel'));
+  t('prTitle',T('prTitle')); t('prSizeLbl',T('sizeLbl'));
+  document.querySelector('#prSize option[value="gross"]').textContent = T('large');
+  document.querySelector('#prSize option[value="klein"]').textContent = T('small');
+  t('prMmLbl',T('mmLbl')); t('prGridLbl',T('perWin'));
+  document.getElementById('prCountLbl').innerHTML = esc(T('winEq')) + '<span id="prCount"></span>' + esc(T('winEq2'));
+  t('prTeamLbl',T('teamLbl')); t('prLogoTxt',T('printLogo'));
+  t('prLogoUp',T('chooseLogo')); t('prLogoRm',T('rmLogo'));
+  t('prClose',T('close')); t('prGo',T('doPrint'));
+  document.getElementById('btnLang').textContent = state.lang==='de' ? 'EN' : 'DE';
+}
 
 /* ================= State (mit benennbaren Speicher-Slots) ================= */
 const LS_KEY = 'rhinosPlaybook_v1';
@@ -263,7 +354,7 @@ function freshSlot(name){
 let state = {
   slots: [freshSlot('Playbook 1')], slot: 0,
   mode: 'view', selP: null, selH: null,          // selH = {li, pi}
-  logo: null, teamName: 'Rhinos',
+  logo: null, teamName: 'Rhinos', lang: 'de',
   print: {preset:'gross', w:127, h:76, grid:'4x2', logo:true}
 };
 function SLOT(){ return state.slots[state.slot]; }
@@ -273,6 +364,7 @@ try{
     if(s.slots && s.slots.length){
       state.slots = s.slots; state.slot = Math.min(s.slot||0, s.slots.length-1);
       state.logo = s.logo || null; state.teamName = s.teamName || 'Rhinos';
+      state.lang = s.lang || 'de';
       if(s.print) state.print = Object.assign(state.print, s.print);
     } else if(s.plays && s.plays.length){   // altes Ein-Playbook-Format migrieren
       state.slots = [{name:'Playbook 1', plays:s.plays,
@@ -293,7 +385,7 @@ function save(){
   clearTimeout(saveTimer);
   saveTimer = setTimeout(()=>{ try{
     localStorage.setItem(LS_KEY, JSON.stringify({slots:state.slots, slot:state.slot,
-      logo:state.logo, teamName:state.teamName, print:state.print}));
+      logo:state.logo, teamName:state.teamName, print:state.print, lang:state.lang}));
   }catch(e){} }, 300);
 }
 
@@ -339,7 +431,7 @@ function render(){
       if(d.z) s += `<ellipse cx="${FX(d.x)}" cy="${FY(d.y)}" rx="${d.z[0]*5.7}" ry="${d.z[1]*24}"
         fill="rgba(198,40,40,.10)" stroke="rgba(198,40,40,.45)" stroke-width="1.5" stroke-dasharray="6 5"/>`;
     }
-    if(DEF_INFO[D.preset]) s += `<text x="12" y="18" font-size="11" fill="#c62828">${DEF_INFO[D.preset]}</text>`;
+    s += `<text x="12" y="18" font-size="11" fill="#c62828">${T('def_'+D.preset)}</text>`;
   }
 
   // ---- Offense-Routen ----
@@ -423,7 +515,7 @@ function renderTopbar(){
   const nameIn = document.getElementById('playName');
   if(document.activeElement!==nameIn) nameIn.value = p.name || ('Play '+p.n);
   document.getElementById('btnMode').classList.toggle('on', state.mode==='edit');
-  document.getElementById('btnMode').textContent = state.mode==='edit' ? '✏️ Bearbeiten (an)' : '✏️ Bearbeiten';
+  document.getElementById('btnMode').textContent = state.mode==='edit' ? T('editOn') : T('edit');
   document.getElementById('defSel').value = SLOT().def.preset;
   document.getElementById('btnZones').classList.toggle('on', SLOT().def.zones);
 }
@@ -431,9 +523,9 @@ function renderEditBar(){
   const bar = document.getElementById('editBar');
   bar.classList.toggle('show', state.mode==='edit');
   const info = document.getElementById('selInfo');
-  if(!state.selP){ info.textContent = 'Spieler antippen'; return; }
-  let t = 'Spieler ' + state.selP;
-  if(state.selH) t += ' · Punkt ' + (state.selH.pi+1) + ' (Linie ' + (lineIndexOfSel()+1) + ')';
+  if(!state.selP){ info.textContent = T('tapPlayer'); return; }
+  let t = T('player') + ' ' + state.selP;
+  if(state.selH) t += ' · ' + T('point') + ' ' + (state.selH.pi+1) + ' (' + T('line') + ' ' + (lineIndexOfSel()+1) + ')';
   info.textContent = t;
   const ln = activeLine();
   document.getElementById('btnDash').classList.toggle('on', !!(ln && ln.d));
@@ -532,17 +624,17 @@ document.getElementById('btnZones').onclick = ()=>{ SLOT().def.zones=!SLOT().def
 document.getElementById('btnNew').onclick = ()=>{
   const n = SLOT().plays.length+1;
   const pl = P(n, null, ['X','Y','C','Z'].map(pid=>({p:pid, pts:[[STD[pid][0],0],[STD[pid][0],5]], d:0, e:'a'})));
-  pl.name = 'Neues Play';
+  pl.name = T('newPlay');
   SLOT().plays.push(pl); SLOT().cur = SLOT().plays.length-1; render(); save();
 };
 document.getElementById('btnDup').onclick = ()=>{
   const c = JSON.parse(JSON.stringify(SLOT().plays[SLOT().cur]));
-  c.n = String(SLOT().plays.length+1); c.name = (c.name||'Play '+SLOT().plays[SLOT().cur].n)+' (Kopie)';
+  c.n = String(SLOT().plays.length+1); c.name = (c.name||'Play '+SLOT().plays[SLOT().cur].n)+T('copySuffix');
   SLOT().plays.splice(SLOT().cur+1,0,c); SLOT().cur++; render(); save();
 };
 document.getElementById('btnDel').onclick = ()=>{
   if(SLOT().plays.length<=1) return;
-  if(!confirm('Play "'+(SLOT().plays[SLOT().cur].name||'Play '+SLOT().plays[SLOT().cur].n)+'" löschen?')) return;
+  if(!confirm(T('delPlayQ').replace('{n}', SLOT().plays[SLOT().cur].name||'Play '+SLOT().plays[SLOT().cur].n))) return;
   SLOT().plays.splice(SLOT().cur,1); SLOT().cur=Math.min(SLOT().cur,SLOT().plays.length-1); render(); save();
 };
 
@@ -611,12 +703,12 @@ document.getElementById('fileIn').onchange = ev=>{
   r.onload = ()=>{ try{
     const d = JSON.parse(r.result);
     if(d.plays && d.plays.length){ SLOT().plays=d.plays; if(d.def) SLOT().def=d.def; SLOT().cur=0; render(); save(); }
-    else alert('Ungültige Datei.');
-  }catch(e){ alert('Datei konnte nicht gelesen werden.'); } };
+    else alert(T('invalidFile'));
+  }catch(e){ alert(T('readErr')); } };
   r.readAsText(f); ev.target.value='';
 };
 document.getElementById('btnReset').onclick = ()=>{
-  if(!confirm('Alle Änderungen verwerfen und die 24 Original-Plays wiederherstellen?')) return;
+  if(!confirm(T('resetQ'))) return;
   SLOT().plays = JSON.parse(JSON.stringify(DEFAULT_PLAYS));
   SLOT().cur=0; state.selP=null; state.selH=null; render(); save();
 };
@@ -660,25 +752,25 @@ document.getElementById('slotSel').onchange = ev=>{
   state.slot = +ev.target.value; state.selP=null; state.selH=null; render(); save();
 };
 document.getElementById('slotNew').onclick = ()=>{
-  const name = prompt('Name des neuen Slots:', 'Gameplan '+(state.slots.length+1));
+  const name = prompt(T('newSlotPrompt'), T('gameplan')+' '+(state.slots.length+1));
   if(!name) return;
   state.slots.push(freshSlot(name)); state.slot = state.slots.length-1;
   state.selP=null; state.selH=null; render(); save();
 };
 document.getElementById('slotRen').onclick = ()=>{
-  const name = prompt('Slot umbenennen:', SLOT().name);
+  const name = prompt(T('renSlot'), SLOT().name);
   if(!name) return;
   SLOT().name = name; render(); save();
 };
 document.getElementById('slotDup').onclick = ()=>{
   const c = JSON.parse(JSON.stringify(SLOT()));
-  c.name = SLOT().name + ' (Kopie)';
+  c.name = SLOT().name + T('copySuffix');
   state.slots.splice(state.slot+1, 0, c); state.slot++;
   render(); save();
 };
 document.getElementById('slotDel').onclick = ()=>{
-  if(state.slots.length<=1){ alert('Der letzte Slot kann nicht gelöscht werden.'); return; }
-  if(!confirm('Slot "'+SLOT().name+'" mit allen Plays löschen?')) return;
+  if(state.slots.length<=1){ alert(T('lastSlot')); return; }
+  if(!confirm(T('delSlotQ').replace('{n}', SLOT().name))) return;
   state.slots.splice(state.slot,1); state.slot = Math.min(state.slot, state.slots.length-1);
   state.selP=null; state.selH=null; render(); save();
 };
@@ -724,7 +816,7 @@ function buildCards(){
     const logo = (state.print.logo && state.logo) ? `<img src="${state.logo}">` : '';
     html += `<div class="wcard" style="width:${state.print.w}mm;height:${state.print.h}mm">
       <div class="wcHead">${logo}<span class="t">${esc(state.teamName)}</span>
-        <span class="w">${esc(SLOT().name)} · Fenster ${w+1}</span></div>
+        <span class="w">${esc(SLOT().name)} · ${T('window')} ${w+1}</span></div>
       <div class="wcGrid" style="grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},1fr)">${cells}</div>
     </div>`;
   }
@@ -784,6 +876,15 @@ document.getElementById('prGo').onclick = ()=>{
   window.print();
 };
 
+/* Sprachumschalter */
+document.getElementById('btnLang').onclick = ()=>{
+  state.lang = state.lang==='de' ? 'en' : 'de';
+  applyLang();
+  if(document.getElementById('printOv').classList.contains('show')) refreshPrintUI();
+  render(); save();
+};
+
+applyLang();
 render();
 </script>
 </body>
