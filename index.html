@@ -281,6 +281,8 @@
       <button id="btnAnim" class="grn">▶ Abspielen</button>
       <button id="btnMirrorTop" title="Play links/rechts spiegeln">⇋ Flip Play</button>
       <div class="sep"></div>
+      <select id="losSel" title="Ballposition (Yardlinie)"></select>
+      <div class="sep"></div>
       <span class="lbl" style="color:var(--dim)">Defense:</span>
       <select id="defSel">
         <option value="off">— aus —</option>
@@ -320,7 +322,9 @@
         <option value="o">Ende: Punkt</option>
         <option value="n">Ende: offen</option>
       </select>
+      <button id="btnAddText" title="Text auf dem Play platzieren">+ Text</button>
       <div class="sep"></div>
+      <button id="btnRound" title="Routen-Ecken abrunden (global)">◝ Rund</button>
       <select id="lwSel" title="Liniendicke aller Routen (global)">
         <option value="3">Linien: dünn</option>
         <option value="4">Linien: normal</option>
@@ -336,6 +340,13 @@
       <div class="tagRow">
         <label id="tagsLblEl">Tags:</label>
         <input type="text" id="tagsIn" placeholder="z.B. Redzone, 3rd Down (Komma-getrennt)">
+      </div>
+      <div class="tagRow">
+        <label id="catLblEl">Kategorie:</label>
+        <select id="catSel" style="flex:1;min-width:0"></select>
+        <button id="catAdd" title="Neue Kategorie">+</button>
+        <button id="catRen" title="Kategorie umbenennen">✎</button>
+        <button id="catDel" class="warn" title="Kategorie löschen">🗑</button>
       </div>
     </div>
 
@@ -359,6 +370,8 @@
         <option value="C">C</option><option value="Z">Z</option>
       </select>
       <label id="prDefWrap" style="display:none"><input type="checkbox" id="prDef"> <span id="prDefTxt">Defense mitdrucken</span></label>
+      <label><input type="checkbox" id="prCat"> <span id="prCatTxt">Kategorie-Farben</span></label>
+      <label><input type="checkbox" id="prTexts"> <span id="prTexTxt">Play-Texte</span></label>
     </div>
     <div class="pRow" id="prRowSize">
       <label id="prSizeLbl">Größe:</label>
@@ -488,6 +501,14 @@ de:{
   styleT:'Linienstil der ausgewählten Linie',
   lwT:'Liniendicke aller Routen (global)',
   lwThin:'Linien: dünn', lwNorm:'Linien: normal', lwThick:'Linien: dick', lwXThick:'Linien: sehr dick',
+  roundBtn:'◝ Rund', roundT:'Routen-Ecken abrunden (global)',
+  addText:'+ Text', addTextT:'Text auf dem Play platzieren',
+  textPrompt:'Text:', textEditPrompt:'Text bearbeiten (leer = löschen):',
+  catLbl:'Kategorie:', catNone:'— keine —', catNew:'Neue Kategorie:',
+  catRenP:'Kategorie umbenennen:', catDelQ:'Kategorie "{n}" löschen? Die Plays verlieren nur die Zuordnung.',
+  catAddT:'Neue Kategorie', catRenT:'Kategorie umbenennen', catDelT:'Kategorie löschen',
+  prCatTxt:'Kategorie-Farben', prTexTxt:'Play-Texte',
+  losT:'Ballposition (Yardlinie)', own:'Eigene', opp:'Gegner', mid:'Mittellinie (25)',
   endA:'Ende: Pfeil', endO:'Ende: Punkt', endN:'Ende: offen',
   tip:'Tipp: Punkt auf der Route antippen, dann „+ Abzweig" für eine Options-Route ab diesem Punkt.',
   hint:'Änderungen werden automatisch gespeichert', playNamePh:'Play-Name',
@@ -539,6 +560,14 @@ en:{
   styleT:'Line style of the selected line',
   lwT:'Line width of all routes (global)',
   lwThin:'Lines: thin', lwNorm:'Lines: normal', lwThick:'Lines: thick', lwXThick:'Lines: extra thick',
+  roundBtn:'◝ Round', roundT:'Round route corners (global)',
+  addText:'+ Text', addTextT:'Place text on the play',
+  textPrompt:'Text:', textEditPrompt:'Edit text (empty = delete):',
+  catLbl:'Category:', catNone:'— none —', catNew:'New category:',
+  catRenP:'Rename category:', catDelQ:'Delete category "{n}"? Plays only lose the assignment.',
+  catAddT:'New category', catRenT:'Rename category', catDelT:'Delete category',
+  prCatTxt:'Category colors', prTexTxt:'Play texts',
+  losT:'Ball position (yard line)', own:'Own', opp:'Opp.', mid:'Midfield (25)',
   endA:'End: arrow', endO:'End: dot', endN:'End: open',
   tip:'Tip: tap a point on the route, then "+ Branch" to add an option route from that point.',
   hint:'Changes are saved automatically', playNamePh:'Play name',
@@ -602,6 +631,13 @@ function applyLang(){
   document.querySelector('#lwSel option[value="4"]').textContent = T('lwNorm');
   document.querySelector('#lwSel option[value="5.5"]').textContent = T('lwThick');
   document.querySelector('#lwSel option[value="7"]').textContent = T('lwXThick');
+  t('btnRound',T('roundBtn')); ti('btnRound',T('roundT'));
+  t('btnAddText',T('addText')); ti('btnAddText',T('addTextT'));
+  t('catLblEl',T('catLbl'));
+  ti('catAdd',T('catAddT')); ti('catRen',T('catRenT')); ti('catDel',T('catDelT'));
+  t('prCatTxt',T('prCatTxt')); t('prTexTxt',T('prTexTxt'));
+  ti('losSel',T('losT'));
+  buildLosSel();
   document.querySelector('#endSel option[value="a"]').textContent = T('endA');
   document.querySelector('#endSel option[value="o"]').textContent = T('endO');
   document.querySelector('#endSel option[value="n"]').textContent = T('endN');
@@ -646,16 +682,21 @@ const LS_KEY = 'rhinosPlaybook_v1';
 function freshSlot(name){
   return {name, plays: JSON.parse(JSON.stringify(DEFAULT_PLAYS)),
     def:{preset:'off', players:[], zones:true, v:DEF_V}, cur:0,
-    labels:{X:'X',Y:'Y',C:'C',Z:'Z',Q:'Q'}};
+    labels:{X:'X',Y:'Y',C:'C',Z:'Z',Q:'Q'}, cats:[]};
 }
 function LBL(pid){ return (SLOT().labels && SLOT().labels[pid]) || pid; }
 let state = {
   slots: [freshSlot('Playbook 1')], slot: 0,
   mode: 'view', selP: null, selH: null, selD: null,   // selH = {li, pi}, selD = Defense-Index
   logo: null, teamName: 'Rhinos', lang: 'de',
-  snap: true, tagFilter: '', showNotes: false, lineW: 4,
-  print: {preset:'gross', w:127, h:76, grid:'4x2', logo:true, layout:'wrist', pos:'all', def:false}
+  snap: true, tagFilter: '', showNotes: false, lineW: 4, round: false,
+  print: {preset:'gross', w:127, h:76, grid:'4x2', logo:true, layout:'wrist', pos:'all', def:false, cat:false, texts:true}
 };
+const CAT_COLORS = ['#e53935','#1e88e5','#43a047','#fb8c00','#8e24aa','#00897b','#f4b400','#6d4c41'];
+function catColOf(play){
+  const c = (SLOT().cats||[]).find(c=>c.id===play.cat);
+  return c ? c.c : null;
+}
 function SLOT(){ return state.slots[state.slot]; }
 function DEF(){ const p = SLOT().plays[SLOT().cur]; return p.defOverride || SLOT().def; }
 try{
@@ -667,6 +708,7 @@ try{
       state.lang = s.lang || 'de';
       state.snap = s.snap !== false;
       state.lineW = s.lineW || 4;
+      state.round = !!s.round;
       if(s.print) state.print = Object.assign(state.print, s.print);
     } else if(s.plays && s.plays.length){   // altes Ein-Playbook-Format migrieren
       state.slots = [{name:'Playbook 1', plays:s.plays,
@@ -680,6 +722,7 @@ try{
       sl.def.v = DEF_V;
       if(sl.cur==null || sl.cur>=sl.plays.length) sl.cur = 0;
       if(!sl.labels) sl.labels = {X:'X',Y:'Y',C:'C',Z:'Z',Q:'Q'};
+      if(!sl.cats) sl.cats = [];
     }
   }
 }catch(e){}
@@ -689,13 +732,13 @@ function save(){
   saveTimer = setTimeout(()=>{ try{
     localStorage.setItem(LS_KEY, JSON.stringify({slots:state.slots, slot:state.slot,
       logo:state.logo, teamName:state.teamName, print:state.print, lang:state.lang,
-      snap:state.snap, lineW:state.lineW}));
+      snap:state.snap, lineW:state.lineW, round:state.round}));
   }catch(e){} }, 300);
 }
 
 /* ================= Undo / Redo & Einrasten ================= */
 let undoStack = [], redoStack = [];
-function snapshot(){ return JSON.stringify({plays:SLOT().plays, def:SLOT().def, cur:SLOT().cur, labels:SLOT().labels}); }
+function snapshot(){ return JSON.stringify({plays:SLOT().plays, def:SLOT().def, cur:SLOT().cur, labels:SLOT().labels, cats:SLOT().cats}); }
 function pushUndo(){
   const sn = snapshot();
   if(undoStack[undoStack.length-1]===sn) return;
@@ -707,6 +750,7 @@ function applySnapshot(sn){
   const d = JSON.parse(sn);
   SLOT().plays = d.plays; SLOT().def = d.def; SLOT().cur = Math.min(d.cur, d.plays.length-1);
   if(d.labels) SLOT().labels = d.labels;
+  if(d.cats) SLOT().cats = d.cats;
   state.selP=null; state.selH=null; state.selD=null; render(); save();
 }
 function doUndo(){ if(!undoStack.length) return; redoStack.push(snapshot()); applySnapshot(undoStack.pop()); }
@@ -743,6 +787,24 @@ function dashFor(st, sc){
   if(st==='dot')  return '0.1 '+(8*sc).toFixed(1);
   return null;
 }
+function roundedD(pts, r){
+  if(pts.length<3) return pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  let d = 'M'+pts[0][0].toFixed(1)+' '+pts[0][1].toFixed(1);
+  for(let i=1; i<pts.length-1; i++){
+    const a=pts[i-1], b=pts[i], c=pts[i+1];
+    const l1=Math.hypot(b[0]-a[0],b[1]-a[1])||1, l2=Math.hypot(c[0]-b[0],c[1]-b[1])||1;
+    const r1=Math.min(r,l1/2), r2=Math.min(r,l2/2);
+    d += ' L'+(b[0]-(b[0]-a[0])/l1*r1).toFixed(1)+' '+(b[1]-(b[1]-a[1])/l1*r1).toFixed(1)
+       + ' Q'+b[0].toFixed(1)+' '+b[1].toFixed(1)
+       + ' '+(b[0]+(c[0]-b[0])/l2*r2).toFixed(1)+' '+(b[1]+(c[1]-b[1])/l2*r2).toFixed(1);
+  }
+  return d + ' L'+pts[pts.length-1][0].toFixed(1)+' '+pts[pts.length-1][1].toFixed(1);
+}
+function lineD(pts, st, amp, rr){
+  if(st==='wave') return wavyD(pts, amp);
+  if(state.round) return roundedD(pts, rr);
+  return pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+}
 function wavyD(pts, amp){
   let d = 'M'+pts[0][0].toFixed(1)+' '+pts[0][1].toFixed(1);
   for(let i=1; i<pts.length; i++){
@@ -772,15 +834,27 @@ function render(){
   // Feld
   s += `<rect width="${W}" height="${H}" fill="#f4f6f3"/>`;
   s += `<rect width="${W}" height="${H}" fill="none" stroke="#c9d2c9" stroke-width="2"/>`;
+  // Ballposition: Feld 2×25yd + 10yd Endzonen, LOS = play.los Yards von der eigenen Goalline
+  const los = play.los || 5, gOwn = -los, gOpp = 50 - los;
+  // Endzonen (eigene unten, gegnerische oben)
+  s += `<rect x="0" y="${FY(gOwn)}" width="${W}" height="240" fill="#e2eae2"/>`;
+  s += `<rect x="0" y="${FY(gOpp+10)}" width="${W}" height="240" fill="#e2eae2"/>`;
+  s += `<text x="${W/2}" y="${FY(gOwn-4)}" font-size="24" letter-spacing="10" fill="#b4c2b4" text-anchor="middle">ENDZONE</text>`;
+  s += `<text x="${W/2}" y="${FY(gOpp+5)}" font-size="24" letter-spacing="10" fill="#b4c2b4" text-anchor="middle">ENDZONE</text>`;
   // Vertikale Viertel-Linien (25 / 50 / 75 % der Feldbreite)
   for(const qx of [25,50,75])
     s += `<line x1="${FX(qx)}" y1="8" x2="${FX(qx)}" y2="${H-8}" stroke="#e2e8e2" stroke-width="1.2"/>`;
   for(let y=-10; y<=20; y+=1){
     if(y===0) continue;
-    const five = y%5===0;
+    const abs = los + y;
+    if(abs<=0 || abs>=50) continue;                    // keine Yardlinien in den Endzonen
+    const five = abs%5===0;
     s += `<line x1="8" y1="${FY(y)}" x2="${W-8}" y2="${FY(y)}" stroke="${five?'#bfcabf':'#e0e6e0'}" stroke-width="${five?3:1.6}"/>`;
-    if(five) s += `<text x="${W-12}" y="${FY(y)-4}" font-size="10" fill="#aab6aa" text-anchor="end">${y>0?'+':''}${y}</text>`;
+    if(five) s += `<text x="${W-12}" y="${FY(y)-4}" font-size="10" fill="#aab6aa" text-anchor="end">${abs<=25?abs:50-abs}</text>`;
   }
+  // Goallinien
+  s += `<line x1="0" y1="${FY(gOwn)}" x2="${W}" y2="${FY(gOwn)}" stroke="#7f8f7f" stroke-width="5"/>`;
+  s += `<line x1="0" y1="${FY(gOpp)}" x2="${W}" y2="${FY(gOpp)}" stroke="#7f8f7f" stroke-width="5"/>`;
   // LOS
   s += `<line x1="0" y1="${FY(0)}" x2="${W}" y2="${FY(0)}" stroke="#8a958a" stroke-width="4"/>`;
   s += `<text x="10" y="${FY(0)-8}" font-size="11" fill="#8a958a" font-weight="bold">LOS</text>`;
@@ -800,8 +874,7 @@ function render(){
     const col = '#222';
     const pts = ln.pts.map(p=>[FX(p[0]),FY(p[1])]);
     const st = styleOf(ln);
-    const dAttr = st==='wave' ? wavyD(pts,5)
-      : pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const dAttr = lineD(pts, st, 5, 14);
     const da = dashFor(st, LWF());
     const sel = (state.mode==='edit' && state.selP===ln.p);
     s += `<path d="${dAttr}" fill="none" stroke="${sel?'#1668c9':col}" stroke-width="${GLW()}"
@@ -826,6 +899,12 @@ function render(){
       s += `<circle data-op="${pid}" cx="${cx}" cy="${cy}" r="14" fill="${col}" ${ring} style="cursor:grab"/>`;
     s += `<text x="${cx}" y="${cy+ldy}" font-size="${lfs}" font-weight="bold" fill="#fff" text-anchor="middle" pointer-events="none">${esc(lb)}</text>`;
   }
+
+  // ---- Play-Texte ----
+  (play.texts||[]).forEach((tx,txi)=>{
+    s += `<text data-tx="${txi}" x="${FX(tx.x)}" y="${FY(tx.y)}" font-size="15" font-weight="600" fill="#333"
+      text-anchor="middle" stroke="#fff" stroke-width="3" style="paint-order:stroke;cursor:${state.mode==='edit'?'grab':'default'}">${esc(tx.t)}</text>`;
+  });
 
   // ---- Editor-Handles ----
   if(state.mode==='edit' && state.selP){
@@ -867,6 +946,7 @@ function renderSlots(){
 }
 function playMatchesFilter(p){
   if(!state.tagFilter) return true;
+  if(state.tagFilter.startsWith('cat:')) return p.cat === +state.tagFilter.slice(4);
   return (p.tags||'').split(',').map(t=>t.trim()).includes(state.tagFilter);
 }
 function renderSidebar(){
@@ -876,10 +956,13 @@ function renderSidebar(){
   const tf = document.getElementById('tagFilter');
   const tags = new Set();
   plays.forEach(p=>(p.tags||'').split(',').map(t=>t.trim()).filter(Boolean).forEach(t=>tags.add(t)));
-  if(state.tagFilter && !tags.has(state.tagFilter)) state.tagFilter='';
+  const cats = SLOT().cats||[];
+  if(state.tagFilter && !state.tagFilter.startsWith('cat:') && !tags.has(state.tagFilter)) state.tagFilter='';
+  if(state.tagFilter.startsWith('cat:') && !cats.some(c=>c.id===+state.tagFilter.slice(4))) state.tagFilter='';
   tf.innerHTML = `<option value="">${T('allTags')}</option>` +
-    [...tags].sort().map(t=>`<option value="${esc(t)}" ${t===state.tagFilter?'selected':''}>${esc(t)}</option>`).join('');
-  tf.style.display = tags.size ? '' : 'none';
+    cats.map(c=>`<option value="cat:${c.id}" ${state.tagFilter==='cat:'+c.id?'selected':''}>● ${esc(c.n)}</option>`).join('') +
+    [...tags].sort().map(t=>`<option value="${esc(t)}" ${t===state.tagFilter?'selected':''}>🏷 ${esc(t)}</option>`).join('');
+  tf.style.display = (tags.size || cats.length) ? '' : 'none';
 
   const list = document.getElementById('playList');
   list.innerHTML = plays.map((p,i)=>{
@@ -887,8 +970,9 @@ function renderSidebar(){
     const st = (p.stats && p.stats.c) ? `<span class="pStat">${p.stats.g}/${p.stats.c}</span>` : '';
     const mv = (i===SLOT().cur && !state.tagFilter)
       ? `<span class="pMove"><button data-mv="-1" title="${T('tUp')}">▲</button><button data-mv="1" title="${T('tDown')}">▼</button></span>` : '';
+    const cc = catColOf(p);
     return `<div class="pItem ${i===SLOT().cur?'on':''}" data-i="${i}" draggable="true">
-       <span class="pNum">${i+1}</span><span class="pName">${esc(p.name||'Play '+(i+1))}</span>${st}${mv}</div>`;
+       <span class="pNum"${cc?` style="background:${cc}"`:''}>${i+1}</span><span class="pName">${esc(p.name||'Play '+(i+1))}</span>${st}${mv}</div>`;
   }).join('');
   list.querySelectorAll('.pItem').forEach(el=>{
     el.onclick = ev=>{
@@ -927,8 +1011,22 @@ function renderTopbar(){
   document.getElementById('btnPinDef').classList.toggle('on', !!play.defOverride);
   document.getElementById('btnNotes').classList.toggle('on', !!(play.note || play.tags));
   document.getElementById('btnSnap').classList.toggle('on', !!state.snap);
+  document.getElementById('losSel').value = String(play.los || 5);
   renderNotes();
 }
+function buildLosSel(){
+  const sel = document.getElementById('losSel');
+  const vals = [1,2,3,4,5,10,15,20,25,30,35,40,45,46,47,48,49];
+  sel.innerHTML = vals.map(v=>{
+    const lbl = v<25 ? T('own')+' '+v : v===25 ? T('mid') : T('opp')+' '+(50-v);
+    return `<option value="${v}">${lbl}</option>`;
+  }).join('');
+}
+document.getElementById('losSel').onchange = ev=>{
+  pushUndo();
+  SLOT().plays[SLOT().cur].los = +ev.target.value;
+  render(); save();
+};
 function renderNotes(){
   const p = SLOT().plays[SLOT().cur];
   document.getElementById('notesBar').classList.toggle('show', !!state.showNotes);
@@ -936,7 +1034,45 @@ function renderNotes(){
   if(document.activeElement!==ta) ta.value = p.note||'';
   const ti = document.getElementById('tagsIn');
   if(document.activeElement!==ti) ti.value = p.tags||'';
+  const cs = document.getElementById('catSel');
+  cs.innerHTML = `<option value="">${T('catNone')}</option>` +
+    (SLOT().cats||[]).map(c=>`<option value="${c.id}" ${p.cat===c.id?'selected':''}>● ${esc(c.n)}</option>`).join('');
+  const cc = catColOf(p);
+  cs.style.borderLeft = cc ? '5px solid '+cc : '';
 }
+document.getElementById('catSel').onchange = ev=>{
+  const p = SLOT().plays[SLOT().cur];
+  if(ev.target.value==='') delete p.cat; else p.cat = +ev.target.value;
+  render(); save();
+};
+document.getElementById('catAdd').onclick = ()=>{
+  const name = prompt(T('catNew'), '');
+  if(!name) return;
+  pushUndo();
+  const cats = SLOT().cats;
+  const id = cats.length ? Math.max(...cats.map(c=>c.id))+1 : 1;
+  cats.push({id, n:name, c:CAT_COLORS[cats.length % CAT_COLORS.length]});
+  SLOT().plays[SLOT().cur].cat = id;
+  render(); save();
+};
+document.getElementById('catRen').onclick = ()=>{
+  const p = SLOT().plays[SLOT().cur];
+  const c = (SLOT().cats||[]).find(c=>c.id===p.cat);
+  if(!c) return;
+  const name = prompt(T('catRenP'), c.n);
+  if(!name) return;
+  c.n = name; render(); save();
+};
+document.getElementById('catDel').onclick = ()=>{
+  const p = SLOT().plays[SLOT().cur];
+  const c = (SLOT().cats||[]).find(c=>c.id===p.cat);
+  if(!c) return;
+  if(!confirm(T('catDelQ').replace('{n}', c.n))) return;
+  pushUndo();
+  SLOT().cats = SLOT().cats.filter(x=>x.id!==c.id);
+  SLOT().plays.forEach(pl=>{ if(pl.cat===c.id) delete pl.cat; });
+  render(); save();
+};
 function renderEditBar(){
   const bar = document.getElementById('editBar');
   bar.classList.toggle('show', state.mode==='edit');
@@ -963,9 +1099,19 @@ function renderEditBar(){
     document.getElementById('endSel').value = ln.e;
   }
   document.getElementById('lwSel').value = String(GLW());
+  document.getElementById('btnRound').classList.toggle('on', !!state.round);
 }
 document.getElementById('lwSel').onchange = ev=>{
   state.lineW = parseFloat(ev.target.value) || 4;
+  render(); save();
+};
+document.getElementById('btnRound').onclick = ()=>{ state.round=!state.round; render(); save(); };
+document.getElementById('btnAddText').onclick = ()=>{
+  const v = prompt(T('textPrompt'), '');
+  if(!v) return;
+  pushUndo();
+  const play = SLOT().plays[SLOT().cur];
+  (play.texts = play.texts||[]).push({x:50, y:12, t:v});
   render(); save();
 };
 document.getElementById('lblIn').oninput = ev=>{
@@ -1019,6 +1165,8 @@ function bindField(){
         drag = {type:'o', pid, start:svgPoint(ev), pos0:play.pos[pid].slice(),
                 lines0: play.lines.map(l=> l.p===pid ? l.pts.map(p=>p.slice()) : null)};
       }
+    } else if(t.dataset.tx!=null && state.mode==='edit'){          // Play-Text
+      drag = {type:'t', ti:+t.dataset.tx, moved:false};
     } else if(t.closest && t.closest('[data-dp]')){                // Defense
       const di = +t.closest('[data-dp]').dataset.dp;
       if(state.mode==='edit'){ state.selD=di; state.selP=null; state.selH=null; }
@@ -1047,10 +1195,30 @@ function bindField(){
       const sp = snapPt(p);
       DEF().players[drag.di].x = sp[0];
       DEF().players[drag.di].y = Math.max(0.5, sp[1]);
+    } else if(drag.type==='t'){
+      drag.moved = true;
+      const sp = snapPt(p);
+      const tx = play.texts[drag.ti];
+      if(tx){ tx.x = sp[0]; tx.y = sp[1]; }
     }
     requestRender();
   };
-  svg.onpointerup = svg.onpointercancel = ()=>{ if(drag){ drag=null; save(); } };
+  svg.onpointerup = svg.onpointercancel = ()=>{
+    if(!drag) return;
+    if(drag.type==='t' && !drag.moved){
+      const play = SLOT().plays[SLOT().cur];
+      const tx = play.texts && play.texts[drag.ti];
+      if(tx){
+        const nv = prompt(T('textEditPrompt'), tx.t);
+        if(nv!==null){
+          if(nv.trim()==='') play.texts.splice(drag.ti,1);
+          else tx.t = nv;
+          render();
+        }
+      }
+    }
+    drag = null; save();
+  };
 }
 let rafPending=false;
 function requestRender(){
@@ -1206,31 +1374,54 @@ let animId = null;
 document.getElementById('btnAnim').onclick = ()=>{
   if(animId){ cancelAnimationFrame(animId); animId=null; }
   const play = SLOT().plays[SLOT().cur];
-  // Haupt-Route je Spieler: erste Linie (in Feld-px)
-  const runners = [];
-  for(const pid of ['X','Y','C','Z','Q']){
-    const ln = play.lines.find(l=>l.p===pid && ['solid','wave'].includes(styleOf(l))) ||
-               play.lines.find(l=>l.p===pid);
-    if(!ln) continue;
+  // Phase 1: Motion (gewellte Linie), Phase 2: Route (durchgezogene Linie).
+  // Alle laufen mit derselben Geschwindigkeit; kürzere Wege sind früher fertig.
+  function pathData(ln){
+    if(!ln) return null;
     const pts = ln.pts.map(p=>[FX(p[0]),FY(p[1])]);
     let len=0; const segs=[];
     for(let i=1;i<pts.length;i++){ const L=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]); segs.push(L); len+=L; }
-    if(len>1) runners.push({pid, pts, segs, len});
+    return len>1 ? {pts, segs, len} : null;
+  }
+  function pointAt(pd, dist){
+    let i=0, d=dist;
+    while(i<pd.segs.length-1 && d>pd.segs[i]){ d-=pd.segs[i]; i++; }
+    const a=pd.pts[i], b=pd.pts[i+1], f=pd.segs[i]?Math.min(1,d/pd.segs[i]):1;
+    return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f];
+  }
+  const runners = [];
+  for(const pid of ['X','Y','C','Z','Q']){
+    const m = pathData(play.lines.find(l=>l.p===pid && styleOf(l)==='wave'));
+    const r = pathData(play.lines.find(l=>l.p===pid && styleOf(l)==='solid'));
+    if(!m && !r) continue;
+    runners.push({pid, m, r, start:[FX(play.pos[pid][0]), FY(play.pos[pid][1])]});
   }
   const layer = document.getElementById('animLayer');
   if(!runners.length) return;
   layer.innerHTML = runners.map(r=>`<circle id="an_${r.pid}" r="10" fill="${COLORS[r.pid]}" stroke="#fff" stroke-width="2.5" opacity="0.95"/>`).join('');
-  const t0 = performance.now(), DUR = 2400;
+  const maxM = Math.max(0, ...runners.map(r=>r.m?r.m.len:0));
+  const maxR = Math.max(0, ...runners.map(r=>r.r?r.r.len:0));
+  const DUR = Math.max(1500, (maxM+maxR)*4.5);
+  const v = (maxM+maxR)/DUR;                       // px pro ms – für alle gleich
+  const T1 = v>0 ? maxM/v : 0;                     // Ende der Motion-Phase
+  const PAUSE = maxM>0 ? 350 : 0;                  // kurze "Set"-Pause vor dem Snap
+  const t0 = performance.now();
   function step(t){
-    const u = Math.min(1,(t-t0)/DUR);
+    const el = t - t0;
     for(const r of runners){
-      let dist = u*r.len, i=0;
-      while(i<r.segs.length-1 && dist>r.segs[i]){ dist-=r.segs[i]; i++; }
-      const a=r.pts[i], b=r.pts[i+1], f=r.segs[i]?Math.min(1,dist/r.segs[i]):1;
-      const el = document.getElementById('an_'+r.pid);
-      if(el){ el.setAttribute('cx', a[0]+(b[0]-a[0])*f); el.setAttribute('cy', a[1]+(b[1]-a[1])*f); }
+      let pt;
+      if(el < T1){                                  // Motion-Phase
+        pt = r.m ? pointAt(r.m, Math.min(r.m.len, el*v)) : (r.r ? r.r.pts[0] : r.start);
+      } else if(el < T1 + PAUSE){                   // kurz stehen (Set)
+        pt = r.m ? r.m.pts[r.m.pts.length-1] : (r.r ? r.r.pts[0] : r.start);
+      } else {                                      // Routen-Phase
+        pt = r.r ? pointAt(r.r, Math.min(r.r.len, (el-T1-PAUSE)*v))
+                 : (r.m ? r.m.pts[r.m.pts.length-1] : r.start);
+      }
+      const c = document.getElementById('an_'+r.pid);
+      if(c){ c.setAttribute('cx', pt[0]); c.setAttribute('cy', pt[1]); }
     }
-    if(u<1) animId = requestAnimationFrame(step);
+    if(el < DUR + PAUSE) animId = requestAnimationFrame(step);
     else { setTimeout(()=>{ const l=document.getElementById('animLayer'); if(l) l.innerHTML=''; },600); animId=null; }
   }
   animId = requestAnimationFrame(step);
@@ -1265,7 +1456,7 @@ document.getElementById('slotDel').onclick = ()=>{
 };
 
 /* ================= Wristband-Druck ================= */
-function playThumbSVG(play, num, hl){
+function playThumbSVG(play, num, hl, catCol, withTexts){
   const TX = x => 4 + x*2.32, TY = y => 112 - y*5.4;   // viewBox 240 x 164
   let s = `<svg viewBox="0 0 240 164" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">`;
   s += `<line x1="0" y1="${TY(0)}" x2="240" y2="${TY(0)}" stroke="#aaa" stroke-width="2"/>`;
@@ -1274,8 +1465,7 @@ function playThumbSVG(play, num, hl){
     const wd = (hl && ln.p===hl ? 3.4 : 2.6) * LWF();
     const pts = ln.pts.map(p=>[TX(p[0]),TY(p[1])]);
     const st = styleOf(ln);
-    const dAttr = st==='wave' ? wavyD(pts,3)
-      : pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const dAttr = lineD(pts, st, 3, 8);
     const da = dashFor(st, 0.6*LWF());
     s += `<path d="${dAttr}"
       fill="none" stroke="${col}" stroke-width="${wd}" stroke-linejoin="round" stroke-linecap="round"
@@ -1294,7 +1484,10 @@ function playThumbSVG(play, num, hl){
     const lb = LBL(pid);
     s += `<text x="${cx}" y="${cy+3}" font-size="${lb.length>1?6:8.5}" font-weight="bold" fill="#fff" text-anchor="middle">${esc(lb)}</text>`;
   }
-  s += `<rect x="3" y="3" width="22" height="14" rx="7" fill="#000"/>
+  if(withTexts) for(const tx of (play.texts||[]))
+    s += `<text x="${TX(tx.x)}" y="${TY(tx.y)}" font-size="9" font-weight="600" fill="#333"
+      text-anchor="middle" stroke="#fff" stroke-width="2" style="paint-order:stroke">${esc(tx.t)}</text>`;
+  s += `<rect x="3" y="3" width="22" height="14" rx="7" fill="${catCol||'#000'}"/>
     <text x="14" y="14" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">${num}</text>`;
   const nm = (play.name||'').replace(/^\d+\s*/,'');
   if(nm) s += `<text x="29" y="14" font-size="8" fill="#333">${esc(nm).slice(0,30)}</text>`;
@@ -1310,7 +1503,8 @@ function buildCards(){
   for(let w=0; w<cards; w++){
     const chunk = plays.slice(w*per, (w+1)*per);
     if(!chunk.length) break;
-    let cells = chunk.map((p,i)=>`<div class="cell">${playThumbSVG(p, w*per+i+1, hl)}</div>`).join('');
+    let cells = chunk.map((p,i)=>`<div class="cell">${playThumbSVG(p, w*per+i+1, hl,
+      state.print.cat?catColOf(p):null, state.print.texts)}</div>`).join('');
     for(let i=chunk.length; i<per; i++) cells += '<div class="cell"></div>';
     const logo = (state.print.logo && state.logo) ? `<img src="${state.logo}">` : '';
     html += `<div class="wcard" style="width:${state.print.w}mm;height:${state.print.h}mm">
@@ -1322,17 +1516,26 @@ function buildCards(){
   return html;
 }
 /* Großes statisches Play-Diagramm (A4-Druck & Gameday) */
-function bigPlaySVG(play, withDef, hl){
+function bigPlaySVG(play, withDef, hl, withTexts){
   let s = `<svg viewBox="0 30 600 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">`;
   s += `<rect y="30" width="600" height="700" fill="#fff"/>`;
+  const los = play.los || 5, gOwn = -los, gOpp = 50 - los;
+  s += `<rect x="0" y="${FY(gOwn)}" width="${W}" height="240" fill="#f0f2f0"/>`;
+  s += `<rect x="0" y="${FY(gOpp+10)}" width="${W}" height="240" fill="#f0f2f0"/>`;
+  s += `<text x="${W/2}" y="${FY(gOwn-4)}" font-size="24" letter-spacing="10" fill="#ccd4cc" text-anchor="middle">ENDZONE</text>`;
+  s += `<text x="${W/2}" y="${FY(gOpp+5)}" font-size="24" letter-spacing="10" fill="#ccd4cc" text-anchor="middle">ENDZONE</text>`;
   for(const qx of [25,50,75])
     s += `<line x1="${FX(qx)}" y1="38" x2="${FX(qx)}" y2="722" stroke="#f0f0f0" stroke-width="1.2"/>`;
   for(let y=-9; y<=19; y+=1){
     if(y===0) continue;
-    const five = y%5===0;
+    const abs = los + y;
+    if(abs<=0 || abs>=50) continue;
+    const five = abs%5===0;
     s += `<line x1="8" y1="${FY(y)}" x2="${W-8}" y2="${FY(y)}" stroke="${five?'#c4c4c4':'#e8e8e8'}" stroke-width="${five?2.5:1.5}"/>`;
-    if(five) s += `<text x="${W-12}" y="${FY(y)-4}" font-size="10" fill="#999" text-anchor="end">${y>0?'+':''}${y}</text>`;
+    if(five) s += `<text x="${W-12}" y="${FY(y)-4}" font-size="10" fill="#999" text-anchor="end">${abs<=25?abs:50-abs}</text>`;
   }
+  s += `<line x1="0" y1="${FY(gOwn)}" x2="${W}" y2="${FY(gOwn)}" stroke="#9aa59a" stroke-width="5"/>`;
+  s += `<line x1="0" y1="${FY(gOpp)}" x2="${W}" y2="${FY(gOpp)}" stroke="#9aa59a" stroke-width="5"/>`;
   s += `<line x1="0" y1="${FY(0)}" x2="${W}" y2="${FY(0)}" stroke="#666" stroke-width="4"/>`;
   if(withDef){
     const D = play.defOverride || SLOT().def;
@@ -1352,8 +1555,7 @@ function bigPlaySVG(play, withDef, hl){
     const col = hl ? (ln.p===hl ? COLORS[hl] : '#c3c9ce') : '#222';
     const pts = ln.pts.map(p=>[FX(p[0]),FY(p[1])]);
     const st = styleOf(ln);
-    const dAttr = st==='wave' ? wavyD(pts,5)
-      : pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const dAttr = lineD(pts, st, 5, 14);
     const da = dashFor(st, LWF());
     s += `<path d="${dAttr}"
       fill="none" stroke="${col}" stroke-width="${GLW()}" stroke-linejoin="round" stroke-linecap="round"
@@ -1372,18 +1574,24 @@ function bigPlaySVG(play, withDef, hl){
     const lb = LBL(pid);
     s += `<text x="${cx}" y="${cy+(lb.length>1?3.5:5)}" font-size="${lb.length>1?9.5:14}" font-weight="bold" fill="#fff" text-anchor="middle">${esc(lb)}</text>`;
   }
+  if(withTexts!==false) for(const tx of (play.texts||[]))
+    s += `<text x="${FX(tx.x)}" y="${FY(tx.y)}" font-size="16" font-weight="600" fill="#333"
+      text-anchor="middle" stroke="#fff" stroke-width="3" style="paint-order:stroke">${esc(tx.t)}</text>`;
   return s + `</svg>`;
 }
 function buildA4(){
   const hl = state.print.pos==='all' ? null : state.print.pos;
   return SLOT().plays.map((p,i)=>{
     const logo = (state.print.logo && state.logo) ? `<img src="${state.logo}">` : '';
-    const tags = p.tags ? `<div class="a4tags">🏷 ${esc(p.tags)}</div>` : '';
+    const cc = state.print.cat ? catColOf(p) : null;
+    const cat = (SLOT().cats||[]).find(c=>c.id===p.cat);
+    const tags = p.tags ? `<div class="a4tags">🏷 ${esc(p.tags)}${cat?' · ● '+esc(cat.n):''}</div>`
+                        : (cat && state.print.cat ? `<div class="a4tags">● ${esc(cat.n)}</div>` : '');
     return `<div class="a4page">
-      <div class="a4head">${logo}<span class="n">${i+1}</span>
+      <div class="a4head">${logo}<span class="n"${cc?` style="background:${cc};color:#fff;border-radius:2mm;padding:0 2.5mm"`:''}>${i+1}</span>
         <span class="nm">${esc(p.name||'Play '+(i+1))}${hl?' · '+esc(LBL(hl)):''}</span>
         <span class="sl">${esc(state.teamName)} · ${esc(SLOT().name)}</span></div>
-      ${bigPlaySVG(p, state.print.def, hl)}
+      ${bigPlaySVG(p, state.print.def, hl, state.print.texts)}
       ${tags}<div class="a4note">${esc(p.note||'')}</div>
     </div>`;
   }).join('');
@@ -1395,10 +1603,11 @@ function buildFlashPrint(){
   for(let p=0; p<plays.length; p+=4){
     const cells = plays.slice(p, p+4).map((pl,i)=>{
       const n = p+i+1;
+      const cc = state.print.cat ? catColOf(pl) : null;
       return `<div class="fcpCell">
-        <div class="fcpName"><span class="fcpNum">${n}</span><span>${esc(pl.name||'Play '+n)}</span></div>
+        <div class="fcpName"><span class="fcpNum"${cc?` style="background:${cc}"`:''}>${n}</span><span>${esc(pl.name||'Play '+n)}</span></div>
         <div class="fcpFold"></div>
-        <div class="fcpThumb">${playThumbSVG(pl, n, hl)}</div>
+        <div class="fcpThumb">${playThumbSVG(pl, n, hl, cc, state.print.texts)}</div>
       </div>`;
     }).join('');
     pages += `<div class="fcpPage">${cells}</div>`;
@@ -1418,6 +1627,8 @@ function refreshPrintUI(){
   document.getElementById('prDefWrap').style.display = a4 ? '' : 'none';
   document.getElementById('prRowSize').style.display = wrist ? '' : 'none';
   document.getElementById('prRowGrid').style.display = wrist ? '' : 'none';
+  document.getElementById('prCat').checked = !!state.print.cat;
+  document.getElementById('prTexts').checked = state.print.texts!==false;
   document.getElementById('prSize').value = state.print.preset;
   document.getElementById('prW').value = state.print.w;
   document.getElementById('prH').value = state.print.h;
@@ -1435,6 +1646,8 @@ function refreshPrintUI(){
 document.getElementById('prLay').onchange = ev=>{ state.print.layout = ev.target.value; refreshPrintUI(); save(); };
 document.getElementById('prPos').onchange = ev=>{ state.print.pos = ev.target.value; refreshPrintUI(); save(); };
 document.getElementById('prDef').onchange = ev=>{ state.print.def = ev.target.checked; refreshPrintUI(); save(); };
+document.getElementById('prCat').onchange = ev=>{ state.print.cat = ev.target.checked; refreshPrintUI(); save(); };
+document.getElementById('prTexts').onchange = ev=>{ state.print.texts = ev.target.checked; refreshPrintUI(); save(); };
 function openPrint(layout){
   if(layout) state.print.layout = layout;
   document.getElementById('printOv').classList.add('show');
@@ -1577,9 +1790,11 @@ de: `
 <p><span class="k">+ Punkt</span> fügt nach dem gewählten Punkt einen Zwischenpunkt ein. <span class="k">+ Abzweig</span> startet eine neue Linie am gewählten Punkt – so entstehen Options-Routen. Für die Linie der Auswahl gibt es vier Stile – durchgezogen (Route), gestrichelt (Option), gepunktet (Pass/Pitch) und gewellt (Motion/Shift) – sowie das Linienende (Pfeil/Punkt/offen).</p>
 <p><span class="k">↶</span>/<span class="k">↷</span> = Rückgängig/Wiederholen (auch Strg+Z / Strg+Y). <span class="k">🧲</span> rastet Punkte auf halbe Yards ein. <span class="k">⇋</span> (Sidebar unten) spiegelt das Play links/rechts.</p>
 <p>Im Feld <span class="k">Name:</span> lässt sich die Bezeichnung des ausgewählten Spielers ändern (max. 3 Zeichen) – Offense-Namen gelten für den ganzen Slot, Defense-Namen pro Verteidiger. Dazu im Bearbeiten-Modus den Spieler bzw. Verteidiger antippen.</p>
+<p><span class="k">+ Text</span> platziert freien Text auf dem Play – ziehen zum Verschieben, antippen zum Bearbeiten oder Löschen. <span class="k">◝ Rund</span> rundet alle Routen-Ecken ab (global), daneben ist die Liniendicke einstellbar. Über die <b>Ballposition</b> in der Topbar wählst du, auf welcher Yardlinie das Play startet (eigene 1 bis gegnerische 1, Standard: eigene 5) – Goallinien und Endzonen (Feld: 2×25 yd + 10 yd Endzonen) werden im Feld dargestellt.</p>
 
 <h4>Notizen & Tags</h4>
-<p><span class="k">📝</span> öffnet Notizen (Coaching Points, QB-Reads) und Tags. Tags (z.B. „Redzone, 3rd Down") erscheinen als Filter über der Play-Liste. Sortieren per Drag & Drop oder <span class="k">▲▼</span> – die Nummern folgen der Reihenfolge.</p>
+<p><span class="k">📝</span> öffnet Notizen (Coaching Points, QB-Reads) und Tags. Tags (z.B. „Redzone, 3rd & Long, 4th & Short") erscheinen als Filter über der Play-Liste – ein Play kann mehrere Tags haben. Sortieren per Drag & Drop oder <span class="k">▲▼</span> – die Nummern folgen der Reihenfolge.</p>
+<p>Zusätzlich hat jedes Play optional genau <b>eine Kategorie</b> mit fester Farbe (im 📝-Panel anlegen, umbenennen, löschen). Die Farbe erscheint an der Play-Nummer in Liste, Übersicht und Gameday, dient als Filter und kann beim Drucken über <span class="k">Kategorie-Farben</span> mit ausgegeben werden.</p>
 
 <h4>Defense</h4>
 <p>Im Defense-Menü: <b>Cover 1</b> (Hybrid: CB/LB/S Zone, Backside-CB spielt Man, wenn der Receiver tief geht), <b>Cover 2</b> (2 Deep Halves + Flats), <b>Cover 3/Diamond</b> (3 Deep Thirds + Hole). Immer mit Rusher <b>R</b>. Verteidiger sind jederzeit verschiebbar, <span class="k">Zonen</span> blendet die Zonen ein/aus.</p>
@@ -1622,9 +1837,11 @@ en: `
 <p><span class="k">+ Point</span> inserts a point after the selected one. <span class="k">+ Branch</span> starts a new line at the selected point – that's how you build option routes. The selected line offers four styles – solid (route), dashed (option), dotted (pass/pitch) and wavy (motion/shift) – plus the line ending (arrow/dot/open).</p>
 <p><span class="k">↶</span>/<span class="k">↷</span> = undo/redo (also Ctrl+Z / Ctrl+Y). <span class="k">🧲</span> snaps points to half yards. <span class="k">⇋</span> (sidebar bottom) mirrors the play left/right.</p>
 <p>The <span class="k">Name:</span> field changes the label of the selected player (max. 3 characters) – offense labels apply to the whole slot, defense labels per defender. In edit mode, just tap the player or defender first.</p>
+<p><span class="k">+ Text</span> places free text on the play – drag to move, tap to edit or delete. <span class="k">◝ Round</span> rounds all route corners (global), next to it you can set the line width. The <b>ball position</b> selector in the top bar sets the yard line the play starts from (own 1 to opponent's 1, default: own 5) – goal lines and end zones (field: 2×25 yd + 10 yd end zones) are shown on the field.</p>
 
 <h4>Notes & tags</h4>
-<p><span class="k">📝</span> opens notes (coaching points, QB reads) and tags. Tags (e.g. "redzone, 3rd down") appear as a filter above the play list. Sort via drag & drop or <span class="k">▲▼</span> – numbers follow the order.</p>
+<p><span class="k">📝</span> opens notes (coaching points, QB reads) and tags. Tags (e.g. "redzone, 3rd & long, 4th & short") appear as a filter above the play list – a play can have several tags. Sort via drag & drop or <span class="k">▲▼</span> – numbers follow the order.</p>
+<p>In addition, each play can have exactly <b>one category</b> with a fixed color (create, rename, delete in the 📝 panel). The color shows on the play number in the list, overview and game day, works as a filter and can be printed via <span class="k">Category colors</span>.</p>
 
 <h4>Defense</h4>
 <p>In the defense menu: <b>Cover 1</b> (hybrid: CB/LB/S zone, backside CB plays man if the receiver goes deep), <b>Cover 2</b> (2 deep halves + flats), <b>Cover 3/diamond</b> (3 deep thirds + hole). Always with rusher <b>R</b>. Defenders can be dragged anytime, <span class="k">Zones</span> toggles the zones.</p>
@@ -1717,8 +1934,9 @@ function gdShowList(){
   const g = document.getElementById('gdGrid');
   g.innerHTML = SLOT().plays.map((p,i)=>{
     const st = (p.stats && p.stats.c) ? `<span class="pStat">${p.stats.g}✓ / ${p.stats.c}</span>` : '';
-    return `<div class="gdTile" data-i="${i}">${playThumbSVG(p, i+1)}
-      <div class="gdCap"><span class="pNum">${i+1}</span><span class="nm">${esc(p.name||'Play '+(i+1))}</span>${st}</div></div>`;
+    const cc = catColOf(p);
+    return `<div class="gdTile" data-i="${i}">${playThumbSVG(p, i+1, null, cc, false)}
+      <div class="gdCap"><span class="pNum"${cc?` style="background:${cc}"`:''}>${i+1}</span><span class="nm">${esc(p.name||'Play '+(i+1))}</span>${st}</div></div>`;
   }).join('');
   g.querySelectorAll('.gdTile').forEach(el=> el.onclick = ()=> gdShowDetail(+el.dataset.i));
 }
@@ -1774,8 +1992,9 @@ function renderHome(){
   const g = document.getElementById('homeGrid');
   g.innerHTML = SLOT().plays.map((p,i)=>{
     const st = (p.stats && p.stats.c) ? `<span class="pStat">${p.stats.g}/${p.stats.c}</span>` : '';
-    return `<div class="gdTile" data-i="${i}">${playThumbSVG(p, i+1)}
-      <div class="gdCap"><span class="pNum">${i+1}</span><span class="nm">${esc(p.name||'Play '+(i+1))}</span>${st}</div></div>`;
+    const cc = catColOf(p);
+    return `<div class="gdTile" data-i="${i}">${playThumbSVG(p, i+1, null, cc, false)}
+      <div class="gdCap"><span class="pNum"${cc?` style="background:${cc}"`:''}>${i+1}</span><span class="nm">${esc(p.name||'Play '+(i+1))}</span>${st}</div></div>`;
   }).join('') + `<div class="homeAdd" id="homeAdd" title="${esc(T('newPlay'))}">＋</div>`;
   g.querySelectorAll('.gdTile').forEach(el=> el.onclick = ()=>{
     SLOT().cur = +el.dataset.i; state.selP=null; state.selH=null; state.selD=null;
