@@ -145,10 +145,19 @@
   .gdCap span.nm{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
   #gdDetail{display:none;padding:12px;max-width:560px;margin:0 auto}
   #gdDetail svg{width:100%;background:#fff;border-radius:10px}
-  #gdBtns{display:flex;gap:10px;margin-top:10px}
-  #gdBtns button{flex:1;font-size:20px;padding:14px;border:none;border-radius:10px;font-weight:700}
-  #gdGood{background:#2e7d32;color:#fff}
-  #gdBad{background:#c62828;color:#fff}
+  #gdResults{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+  #gdResults button{padding:12px 6px;font-size:14px;font-weight:600}
+  #gdResults button.on{background:var(--acc);border-color:var(--acc);color:#06121f}
+  #gdEntry{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;margin-top:10px}
+  #gdEntry .pRow{margin-bottom:6px}
+  #gdEffJa.on{background:#2e7d32;border-color:#2e7d32;color:#fff}
+  #gdEffNein.on{background:#c62828;border-color:#c62828;color:#fff}
+  #gdStats{display:none;padding:12px;max-width:820px;margin:0 auto}
+  .statTbl{width:100%;border-collapse:collapse}
+  .statTbl th,.statTbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;font-size:13px}
+  .statTbl th:nth-child(2),.statTbl td:nth-child(2){text-align:left}
+  .statTbl tr.sum td{font-weight:700;border-top:2px solid var(--line)}
 
   /* Startseite */
   #homeView{display:none;flex-direction:column;height:100%;overflow:auto;
@@ -441,15 +450,35 @@
   <div id="gdHead">
     <button id="gdExit">✕</button>
     <b id="gdTitle"></b>
+    <select id="gdGame"></select>
+    <button id="gdNewGame">+ Spiel</button>
+    <button id="gdStatsBtn" title="Statistik-Tabelle">📊</button>
     <div class="spacer"></div>
     <button id="gdPrint" title="Wristband drucken">🖨</button>
-    <button id="gdReset">Statistik zurücksetzen</button>
+    <button id="gdReset" class="warn">Einträge löschen</button>
   </div>
   <div id="gdGridWrap"><div id="gdGrid"></div></div>
+  <div id="gdStats"></div>
   <div id="gdDetail">
     <button id="gdBack">← Alle Plays</button>
     <div id="gdField" style="margin-top:10px"></div>
-    <div id="gdBtns"><button id="gdGood">✓</button><button id="gdBad">✗</button></div>
+    <div id="gdResults"></div>
+    <div id="gdEntry">
+      <div class="pRow">
+        <label id="gdYdsLbl">Yards:</label>
+        <input type="number" id="gdYds" step="1" value="0" style="width:76px;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px;font-size:16px">
+        <label id="gdWhoLbl">Ballträger:</label>
+        <select id="gdWho"></select>
+        <label id="gdEffLbl">Effizient:</label>
+        <button id="gdEffJa">Ja</button>
+        <button id="gdEffNein">Nein</button>
+        <span id="gdEffAuto" class="lbl"></span>
+      </div>
+      <div class="pRow">
+        <button id="gdSave" class="grn" style="flex:1;font-size:16px;padding:12px">✔ Speichern</button>
+        <button id="gdCancel">Abbrechen</button>
+      </div>
+    </div>
   </div>
 </div>
 <div id="hint">Änderungen werden automatisch gespeichert</div>
@@ -541,7 +570,12 @@ de:{
   pinT:'Defense für dieses Play merken (📌 an = Play hat eigene Defense)',
   shareT:'Link zum Teilen kopieren', shareCopied:'Link kopiert – einfach ans Team schicken!',
   shareLoadQ:'Geteiltes Playbook "{n}" als neuen Slot laden?', shared:'Geteilt',
-  gameday:'🏟 Gameday', gdReset:'Statistik zurücksetzen', gdResetQ:'Alle Play-Statistiken zurücksetzen?',
+  gameday:'🏟 Gameday', gdReset2:'Einträge löschen',
+  gdResetQ2:'Alle Einträge des angezeigten Spiels löschen?',
+  gdGameN:'Spiel', gdNewGame:'+ Spiel', gdNewGameP:'Name des Spiels:',
+  gdAll:'Gesamt (alle Spiele)', gdYds:'Yards:', gdWho:'Ballträger:', gdEff:'Effizient:',
+  gdJa:'Ja', gdNein:'Nein', gdSave:'✔ Speichern', gdCancel:'Abbrechen',
+  gdNoData:'Noch keine Einträge.', gdStatsT:'Statistik-Tabelle',
   gdBack:'← Alle Plays', layoutLbl:'Layout:', layWrist:'Wristband (3 Fenster)',
   layA4:'A4-Playbook (1 Play/Seite)', forLbl:'Für:', forAll:'QB (alle Routen)', printDef:'Defense mitdrucken',
   nameLbl:'Name:', nameT:'Bezeichnung des ausgewählten Spielers (Offense oder Defense, max. 3 Zeichen)',
@@ -600,7 +634,12 @@ en:{
   pinT:'Pin defense to this play (📌 on = play has its own defense)',
   shareT:'Copy share link', shareCopied:'Link copied – send it to your team!',
   shareLoadQ:'Load shared playbook "{n}" as a new slot?', shared:'Shared',
-  gameday:'🏟 Game day', gdReset:'Reset stats', gdResetQ:'Reset all play stats?',
+  gameday:'🏟 Game day', gdReset2:'Clear entries',
+  gdResetQ2:'Delete all entries of the shown game?',
+  gdGameN:'Game', gdNewGame:'+ Game', gdNewGameP:'Game name:',
+  gdAll:'Total (all games)', gdYds:'Yards:', gdWho:'Ball carrier:', gdEff:'Efficient:',
+  gdJa:'Yes', gdNein:'No', gdSave:'✔ Save', gdCancel:'Cancel',
+  gdNoData:'No entries yet.', gdStatsT:'Stats table',
   gdBack:'← All plays', layoutLbl:'Layout:', layWrist:'Wristband (3 windows)',
   layA4:'A4 playbook (1 play/page)', forLbl:'For:', forAll:'QB (all routes)', printDef:'Include defense',
   nameLbl:'Name:', nameT:'Label of the selected player (offense or defense, max. 3 characters)',
@@ -663,7 +702,11 @@ function applyLang(){
   t('btnMirrorTop',T('mirrorBtn')); ti('btnMirrorTop',T('mirrorT'));
   ti('btnUndo',T('undoT')); ti('btnRedo',T('redoT'));
   ti('btnSnap',T('snapT')); ti('btnNotes',T('notesT')); ti('btnPinDef',T('pinT')); ti('btnShare',T('shareT'));
-  t('btnGameday',T('gameday')); t('gdReset',T('gdReset')); t('gdBack',T('gdBack'));
+  t('btnGameday',T('gameday')); t('gdReset',T('gdReset2')); t('gdBack',T('gdBack'));
+  t('gdNewGame',T('gdNewGame')); ti('gdStatsBtn',T('gdStatsT'));
+  t('gdYdsLbl',T('gdYds')); t('gdWhoLbl',T('gdWho')); t('gdEffLbl',T('gdEff'));
+  t('gdEffJa',T('gdJa')); t('gdEffNein',T('gdNein'));
+  t('gdSave',T('gdSave')); t('gdCancel',T('gdCancel'));
   document.getElementById('noteTa').placeholder = T('notePh');
   document.getElementById('tagsIn').placeholder = T('tagsPh');
   t('tagsLblEl',T('tagsLbl'));
@@ -723,6 +766,7 @@ try{
       if(sl.cur==null || sl.cur>=sl.plays.length) sl.cur = 0;
       if(!sl.labels) sl.labels = {X:'X',Y:'Y',C:'C',Z:'Z',Q:'Q'};
       if(!sl.cats) sl.cats = [];
+      if(!sl.games) sl.games = [];
     }
   }
 }catch(e){}
@@ -967,7 +1011,8 @@ function renderSidebar(){
   const list = document.getElementById('playList');
   list.innerHTML = plays.map((p,i)=>{
     if(!playMatchesFilter(p)) return '';
-    const st = (p.stats && p.stats.c) ? `<span class="pStat">${p.stats.g}/${p.stats.c}</span>` : '';
+    const sp = statFor(p,'all');
+    const st = sp.n ? `<span class="pStat">${sp.eff}/${sp.n}</span>` : '';
     const mv = (i===SLOT().cur && !state.tagFilter)
       ? `<span class="pMove"><button data-mv="-1" title="${T('tUp')}">▲</button><button data-mv="1" title="${T('tDown')}">▼</button></span>` : '';
     const cc = catColOf(p);
@@ -1814,7 +1859,8 @@ de: `
 <p>Zum Ausdrucken gibt es im Druckdialog das Layout <b>Flashcards</b>: 4 Faltkarten pro A4-Seite – ausschneiden, an der gepunkteten Linie falten: vorne das Play-Diagramm, hinten der Name.</p>
 
 <h4>Gameday (🏟)</h4>
-<p>Vollbild-Kacheln für die Seitenlinie: Play antippen → groß anzeigen → nach dem Snap <span class="k">✓</span> (hat funktioniert) oder <span class="k">✗</span> tippen. Die Quote (z.B. 3✓/5) steht auf den Kacheln und in der Play-Liste.</p>
+<p>Vollbild-Kacheln für die Seitenlinie: Play antippen → groß anzeigen → nach dem Snap das <b>Ergebnis</b> tippen (Catch, Catch TD, Run, Run TD, Incomplete, Drop, Sack, INT, Penalty O/D), dann Yards und optional den Ballträger eintragen. Die <b>Effizienz</b> wird automatisch gesetzt (mehr als 7 Yards oder TD = Ja) und lässt sich manuell übersteuern – z.B. bei 4th & Long.</p>
+<p>Stats laufen pro <b>Spiel</b>: oben ein neues Spiel anlegen (<span class="k">+ Spiel</span>) oder zwischen Spielen und „Gesamt" wechseln. Die Kacheln zeigen Quote und Ø Yards des gewählten Spiels, <span class="k">📊</span> öffnet die Statistik-Tabelle (Snaps, Effizienz, Yards, TD, INT pro Play). <span class="k">Einträge löschen</span> leert das angezeigte Spiel.</p>
 
 <h4>Als App installieren</h4>
 <p>Wenn die Seite online liegt (z.B. GitHub Pages, zusammen mit der Datei <b>sw.js</b>): auf dem Handy im Browser-Menü „Zum Startbildschirm hinzufügen" wählen – die App läuft dann offline mit eigenem Icon.</p>
@@ -1861,7 +1907,8 @@ en: `
 <p>For printing, the print dialog offers the <b>Flashcards</b> layout: 4 fold-cards per A4 page – cut out, fold at the dotted line: play diagram on the front, name on the back.</p>
 
 <h4>Game day (🏟)</h4>
-<p>Full-screen tiles for the sideline: tap a play → view it large → after the snap tap <span class="k">✓</span> (worked) or <span class="k">✗</span>. The ratio (e.g. 3✓/5) shows on the tiles and in the play list.</p>
+<p>Full-screen tiles for the sideline: tap a play → view it large → after the snap tap the <b>result</b> (catch, catch TD, run, run TD, incomplete, drop, sack, INT, penalty O/D), then enter yards and optionally the ball carrier. <b>Efficiency</b> is set automatically (more than 7 yards or TD = yes) and can be overridden manually – e.g. on 4th & long.</p>
+<p>Stats are tracked per <b>game</b>: create a new game at the top (<span class="k">+ Game</span>) or switch between games and "Total". Tiles show ratio and Ø yards of the selected game, <span class="k">📊</span> opens the stats table (snaps, efficiency, yards, TD, INT per play). <span class="k">Clear entries</span> empties the shown game.</p>
 
 <h4>Install as an app</h4>
 <p>If the page is hosted online (e.g. GitHub Pages, together with the <b>sw.js</b> file): on your phone choose "Add to Home Screen" in the browser menu – the app then works offline with its own icon.</p>
@@ -1925,15 +1972,47 @@ document.getElementById('fcRestart').onclick = fcStart;
 document.getElementById('fcDir').onchange = ()=>{ fcFlipped=false; fcRender(); };
 document.getElementById('fcPos').onchange = ()=>fcRender();
 
-/* ================= Gameday-Modus ================= */
-let gdCur = -1;
+/* ================= Gameday-Modus mit Spiel-Sessions & Stats ================= */
+const GD_RESULTS = [
+  ['c','Catch'],['ctd','Catch TD'],['r','Run'],['rtd','Run TD'],['i','Incomplete'],
+  ['d','Drop'],['s','Sack'],['int','INT'],['po','Penalty O'],['pd','Penalty D']
+];
+let gdCur = -1, gdSel = null;
+function gdViewGame(){ return SLOT().game; }           // Zahl = Spiel-ID, 'all' = Gesamt
+function statFor(p, gid){
+  const es = (p.log||[]).filter(e=> gid==='all' || e.g===gid);
+  const n = es.length, eff = es.filter(e=>e.e).length;
+  const yds = es.reduce((s,e)=>s+(e.y||0),0);
+  const td = es.filter(e=>e.r==='ctd'||e.r==='rtd').length;
+  const to = es.filter(e=>e.r==='int').length;
+  return {n, eff, yds, avg: n?yds/n:0, td, to};
+}
+function gdEnsureGame(){
+  if(!SLOT().games) SLOT().games = [];
+  if(!SLOT().games.length){
+    SLOT().games.push({id:1, n:T('gdGameN')+' 1 · '+new Date().toLocaleDateString()});
+    SLOT().game = 1;
+  }
+  if(SLOT().game==null || (SLOT().game!=='all' && !SLOT().games.some(g=>g.id===SLOT().game)))
+    SLOT().game = SLOT().games[SLOT().games.length-1].id;
+}
+function gdFillGameSel(){
+  const sel = document.getElementById('gdGame');
+  sel.innerHTML = SLOT().games.map(g=>
+    `<option value="${g.id}" ${SLOT().game===g.id?'selected':''}>${esc(g.n)}</option>`).join('') +
+    `<option value="all" ${SLOT().game==='all'?'selected':''}>${T('gdAll')}</option>`;
+}
 function gdShowList(){
+  gdEnsureGame(); gdFillGameSel();
   document.getElementById('gdDetail').style.display = 'none';
+  document.getElementById('gdStats').style.display = 'none';
   document.getElementById('gdGridWrap').style.display = '';
   document.getElementById('gdTitle').textContent = state.teamName+' · '+SLOT().name;
+  const gid = gdViewGame();
   const g = document.getElementById('gdGrid');
   g.innerHTML = SLOT().plays.map((p,i)=>{
-    const st = (p.stats && p.stats.c) ? `<span class="pStat">${p.stats.g}✓ / ${p.stats.c}</span>` : '';
+    const s = statFor(p, gid);
+    const st = s.n ? `<span class="pStat">${s.eff}/${s.n} · Ø${s.avg.toFixed(1)}</span>` : '';
     const cc = catColOf(p);
     return `<div class="gdTile" data-i="${i}">${playThumbSVG(p, i+1, null, cc, false)}
       <div class="gdCap"><span class="pNum"${cc?` style="background:${cc}"`:''}>${i+1}</span><span class="nm">${esc(p.name||'Play '+(i+1))}</span>${st}</div></div>`;
@@ -1941,19 +2020,98 @@ function gdShowList(){
   g.querySelectorAll('.gdTile').forEach(el=> el.onclick = ()=> gdShowDetail(+el.dataset.i));
 }
 function gdShowDetail(i){
-  gdCur = i;
+  gdCur = i; gdSel = null;
   const p = SLOT().plays[i];
   document.getElementById('gdGridWrap').style.display = 'none';
+  document.getElementById('gdStats').style.display = 'none';
   document.getElementById('gdDetail').style.display = 'block';
   document.getElementById('gdTitle').textContent = (i+1)+' · '+(p.name||'Play '+(i+1));
   document.getElementById('gdField').innerHTML = bigPlaySVG(p, true, null);
+  const res = document.getElementById('gdResults');
+  if(gdViewGame()==='all'){ res.innerHTML=''; document.getElementById('gdEntry').style.display='none'; return; }
+  res.innerHTML = GD_RESULTS.map(([k,lbl])=>`<button data-r="${k}">${lbl}</button>`).join('');
+  res.querySelectorAll('button').forEach(b=> b.onclick = ()=> gdPickResult(b.dataset.r));
+  document.getElementById('gdEntry').style.display = 'none';
 }
-function gdMark(good){
+function gdAutoEff(r, y){
+  if(r==='ctd' || r==='rtd') return 1;
+  return y > 7 ? 1 : 0;
+}
+function gdPickResult(r){
+  gdSel = {r, y:0, manual:false};
+  document.querySelectorAll('#gdResults button').forEach(b=>
+    b.classList.toggle('on', b.dataset.r===r));
+  const who = document.getElementById('gdWho');
+  who.innerHTML = `<option value="">–</option>` +
+    ['X','Y','C','Z','Q'].map(pid=>`<option value="${pid}">${esc(LBL(pid))}</option>`).join('');
+  document.getElementById('gdYds').value = 0;
+  document.getElementById('gdEntry').style.display = 'block';
+  gdUpdateEff();
+}
+function gdUpdateEff(){
+  if(!gdSel) return;
+  const y = +document.getElementById('gdYds').value || 0;
+  if(!gdSel.manual) gdSel.e = gdAutoEff(gdSel.r, y);
+  document.getElementById('gdEffJa').classList.toggle('on', !!gdSel.e);
+  document.getElementById('gdEffNein').classList.toggle('on', !gdSel.e);
+  document.getElementById('gdEffAuto').textContent = gdSel.manual ? '' : '(auto)';
+}
+document.getElementById('gdYds').oninput = gdUpdateEff;
+document.getElementById('gdEffJa').onclick = ()=>{ if(gdSel){ gdSel.e=1; gdSel.manual=true; gdUpdateEff(); } };
+document.getElementById('gdEffNein').onclick = ()=>{ if(gdSel){ gdSel.e=0; gdSel.manual=true; gdUpdateEff(); } };
+document.getElementById('gdSave').onclick = ()=>{
+  if(!gdSel || gdViewGame()==='all') return;
   const p = SLOT().plays[gdCur]; if(!p) return;
-  p.stats = p.stats || {c:0, g:0};
-  p.stats.c++; if(good) p.stats.g++;
+  const entry = {g: gdViewGame(), r: gdSel.r, y: +document.getElementById('gdYds').value||0, e: gdSel.e?1:0};
+  const w = document.getElementById('gdWho').value;
+  if(w) entry.w = w;
+  (p.log = p.log||[]).push(entry);
   save(); gdShowList();
+};
+document.getElementById('gdCancel').onclick = ()=>{
+  gdSel = null;
+  document.getElementById('gdEntry').style.display = 'none';
+  document.querySelectorAll('#gdResults button').forEach(b=>b.classList.remove('on'));
+};
+document.getElementById('gdGame').onchange = ev=>{
+  SLOT().game = ev.target.value==='all' ? 'all' : +ev.target.value;
+  save(); gdShowList();
+};
+document.getElementById('gdNewGame').onclick = ()=>{
+  gdEnsureGame();
+  const nr = SLOT().games.length + 1;
+  const name = prompt(T('gdNewGameP'), T('gdGameN')+' '+nr+' · '+new Date().toLocaleDateString());
+  if(!name) return;
+  const id = Math.max(...SLOT().games.map(g=>g.id)) + 1;
+  SLOT().games.push({id, n:name});
+  SLOT().game = id;
+  save(); gdShowList();
+};
+function gdShowStats(){
+  gdEnsureGame(); gdFillGameSel();
+  document.getElementById('gdGridWrap').style.display = 'none';
+  document.getElementById('gdDetail').style.display = 'none';
+  const box = document.getElementById('gdStats');
+  box.style.display = 'block';
+  const gid = gdViewGame();
+  const rows = SLOT().plays.map((p,i)=>({i, p, s:statFor(p,gid)})).filter(r=>r.s.n);
+  const tot = rows.reduce((a,r)=>({n:a.n+r.s.n, eff:a.eff+r.s.eff, yds:a.yds+r.s.yds, td:a.td+r.s.td, to:a.to+r.s.to}),
+    {n:0,eff:0,yds:0,td:0,to:0});
+  box.innerHTML = `<h3 style="margin:4px 0 10px">📊 ${esc(gid==='all'?T('gdAll'):(SLOT().games.find(g=>g.id===gid)||{}).n||'')}</h3>` +
+    (rows.length ? `<table class="statTbl">
+    <tr><th>#</th><th>Play</th><th>Snaps</th><th>Eff</th><th>%</th><th>Yds</th><th>Ø</th><th>TD</th><th>INT</th></tr>` +
+    rows.map(r=>`<tr><td>${r.i+1}</td><td>${esc(r.p.name||'Play '+(r.i+1))}</td><td>${r.s.n}</td>
+      <td>${r.s.eff}</td><td>${Math.round(100*r.s.eff/r.s.n)}%</td><td>${r.s.yds}</td>
+      <td>${r.s.avg.toFixed(1)}</td><td>${r.s.td}</td><td>${r.s.to}</td></tr>`).join('') +
+    `<tr class="sum"><td></td><td>Σ</td><td>${tot.n}</td><td>${tot.eff}</td>
+      <td>${tot.n?Math.round(100*tot.eff/tot.n):0}%</td><td>${tot.yds}</td>
+      <td>${tot.n?(tot.yds/tot.n).toFixed(1):'0'}</td><td>${tot.td}</td><td>${tot.to}</td></tr>
+    </table>` : `<p class="lbl" style="color:var(--dim)">${T('gdNoData')}</p>`);
 }
+document.getElementById('gdStatsBtn').onclick = ()=>{
+  if(document.getElementById('gdStats').style.display==='block') gdShowList();
+  else gdShowStats();
+};
 document.getElementById('btnGameday').onclick = ()=>{
   document.getElementById('gdOv').classList.add('show'); gdShowList();
 };
@@ -1961,12 +2119,15 @@ document.getElementById('gdExit').onclick = ()=>{
   document.getElementById('gdOv').classList.remove('show'); render();
 };
 document.getElementById('gdBack').onclick = gdShowList;
-document.getElementById('gdGood').onclick = ()=>gdMark(true);
-document.getElementById('gdBad').onclick = ()=>gdMark(false);
 document.getElementById('gdReset').onclick = ()=>{
-  if(!confirm(T('gdResetQ'))) return;
-  SLOT().plays.forEach(p=>delete p.stats);
-  save(); gdShowList();
+  if(!confirm(T('gdResetQ2'))) return;
+  const gid = gdViewGame();
+  SLOT().plays.forEach(p=>{
+    if(!p.log) return;
+    p.log = gid==='all' ? [] : p.log.filter(e=>e.g!==gid);
+  });
+  save();
+  if(document.getElementById('gdStats').style.display==='block') gdShowStats(); else gdShowList();
 };
 
 /* Sprachumschalter */
@@ -1991,7 +2152,8 @@ function renderHome(){
   if(state.logo){ lg.src = state.logo; lg.style.display = ''; } else lg.style.display = 'none';
   const g = document.getElementById('homeGrid');
   g.innerHTML = SLOT().plays.map((p,i)=>{
-    const st = (p.stats && p.stats.c) ? `<span class="pStat">${p.stats.g}/${p.stats.c}</span>` : '';
+    const sp = statFor(p,'all');
+    const st = sp.n ? `<span class="pStat">${sp.eff}/${sp.n}</span>` : '';
     const cc = catColOf(p);
     return `<div class="gdTile" data-i="${i}">${playThumbSVG(p, i+1, null, cc, false)}
       <div class="gdCap"><span class="pNum"${cc?` style="background:${cc}"`:''}>${i+1}</span><span class="nm">${esc(p.name||'Play '+(i+1))}</span>${st}</div></div>`;
