@@ -237,6 +237,11 @@
     #side.open{left:0}
     #burger{display:inline-block}
   }
+  /* Touch-Geräte: größere Bedienelemente im Editor */
+  @media (pointer:coarse){
+    #editBar button,#editBar select,#editBar input{min-height:44px}
+    #topbar button,#topbar select{min-height:42px}
+  }
   #burger{display:none}
 </style>
 </head>
@@ -507,7 +512,114 @@ function P(n, posOver, lines){
   const pos = {}; for(const k in STD) pos[k] = (posOver && posOver[k]) ? posOver[k].slice() : STD[k].slice();
   return {n:String(n), name:"", pos, lines};
 }
-const DEFAULT_PLAYS = [{"n":"1","name":"1 Spread Hitches","pos":{"X":[10,0],"Y":[33,0],"C":[50.5,0],"Z":[91,0],"Q":[50,-5]},"lines":[{"p":"X","pts":[[10,0],[10.6,7]],"d":0,"e":"n"},{"p":"X","pts":[[10.6,7],[16,5]],"d":0,"e":"n"},{"p":"X","pts":[[10.6,7],[11,10.5]],"d":1,"e":"a"},{"p":"Y","pts":[[33,0],[33.6,7]],"d":0,"e":"n"},{"p":"Y","pts":[[33.6,7],[39,5]],"d":0,"e":"n"},{"p":"Y","pts":[[33.6,7],[34,10.5]],"d":1,"e":"a"},{"p":"C","pts":[[50.5,0],[51.1,7]],"d":0,"e":"n"},{"p":"C","pts":[[51.1,7],[56.5,5]],"d":0,"e":"n"},{"p":"C","pts":[[51.1,7],[51.5,10.5]],"d":1,"e":"a"},{"p":"Z","pts":[[91,0],[91,7]],"d":0,"e":"n"},{"p":"Z","pts":[[91,7],[85.5,5]],"d":0,"e":"n"},{"p":"Z","pts":[[91,7],[91,10.5]],"d":1,"e":"a"}]},{"n":"2","name":"2 Slot Left Hitches","pos":{"X":[19.5,0],"Y":[40,0],"C":[50.5,0],"Z":[76.5,0],"Q":[50,-5]},"lines":[{"p":"X","pts":[[19.5,0],[20,5.5]],"d":0,"e":"n"},{"p":"X","pts":[[20,5.5],[24,4.2]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[51,5.4]],"d":0,"e":"n"},{"p":"C","pts":[[51,5.4],[55,4.1]],"d":0,"e":"a"},{"p":"Z","pts":[[76.5,0],[76,5]],"d":0,"e":"n"},{"p":"Z","pts":[[76,5],[71.5,5.8]],"d":0,"e":"a"},{"p":"Y","pts":[[40,0],[43,-1.8],[56,-1.8],[93,2.3]],"d":0,"e":"a"}]},{"n":"3","name":"3 Spread Verts","pos":{"X":[10,0],"Y":[31,0],"C":[50.5,0],"Z":[90.5,0],"Q":[50,-2]},"lines":[{"p":"X","pts":[[10,0],[10,8.5]],"d":0,"e":"n"},{"p":"X","pts":[[10.4,7],[14.5,5.6]],"d":1,"e":"a"},{"p":"Y","pts":[[31,0],[35,1.2],[35,8.6]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[52,1.5],[58,4],[58,8]],"d":0,"e":"n"},{"p":"C","pts":[[58,6],[82,8.5]],"d":1,"e":"a"},{"p":"Z","pts":[[90.5,0],[75,4.2],[44,4.4]],"d":0,"e":"a"}]},{"n":"4","name":"4 Spread Smash","pos":{"X":[10,0],"Y":[33,0],"C":[50.5,0],"Z":[91,0],"Q":[50,-5]},"lines":[{"p":"X","pts":[[10,0],[30,3.5],[8,3.9]],"d":0,"e":"a"},{"p":"Y","pts":[[33,0],[32.5,9.5],[11,9.9]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[51,7.5],[38,11.5]],"d":0,"e":"a"},{"p":"Z","pts":[[91,0],[77.5,3.7],[55.5,3.4]],"d":0,"e":"o"}]},{"n":"5","name":"5 Spread Flood","pos":{"X":[10,0],"Y":[33,0],"C":[50.5,0],"Z":[87.5,0],"Q":[50,-5]},"lines":[{"p":"X","pts":[[10,0],[3.5,2],[3.5,9.5]],"d":0,"e":"a"},{"p":"Y","pts":[[33,0],[33,7],[8,7.2]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[50.5,4],[27,4.1]],"d":0,"e":"a"},{"p":"Z","pts":[[87.5,0],[87.5,4.5],[70,9.6]],"d":0,"e":"a"},{"p":"Z","pts":[[87.5,4.5],[87.5,9.7]],"d":0,"e":"n"}]},{"n":"6","name":"6 Spread Ninja","pos":{"X":[10,0],"Y":[31,0],"C":[50.5,0],"Z":[91,0],"Q":[50,-5]},"lines":[{"p":"X","pts":[[10,0],[10,8.7]],"d":0,"e":"a"},{"p":"Y","pts":[[31,0],[30.5,8.4],[52,11.4]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[14,2.8]],"d":0,"e":"a"},{"p":"Z","pts":[[91,0],[90.5,7.3]],"d":0,"e":"n"},{"p":"Z","pts":[[90.5,7.3],[64,7.4]],"d":1,"e":"a"}]},{"n":"7","name":"7 Spread Fax","pos":{"X":[10,0],"Y":[31.5,0],"C":[50.5,0],"Z":[91,0],"Q":[50,-5]},"lines":[{"p":"X","pts":[[10,0],[40,5.3]],"d":0,"e":"n"},{"p":"X","pts":[[40,5.3],[13.5,5.4]],"d":1,"e":"a"},{"p":"Y","pts":[[31.5,0],[7.5,4],[7.5,10.2]],"d":0,"e":"n"},{"p":"Y","pts":[[7.5,7.4],[13.5,6.2]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[68,5.3]],"d":0,"e":"n"},{"p":"C","pts":[[68,4.5],[83,3.8]],"d":1,"e":"a"},{"p":"Z","pts":[[91,0],[90.5,5.4],[69,11.2]],"d":0,"e":"a"}]},{"n":"8","name":"8 Spread Email","pos":{"X":[10,0],"Y":[34,0],"C":[50.5,0],"Z":[91,0],"Q":[50,-5]},"lines":[{"p":"X","pts":[[10,0],[33,6],[70,7.2]],"d":0,"e":"a"},{"p":"Y","pts":[[34,0],[9,3.1],[46,4.2]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[70,4.5],[76,8],[95,11.5]],"d":0,"e":"a"},{"p":"Z","pts":[[91,0],[90,8.9],[72,11.3]],"d":0,"e":"a"}]},{"n":"9","name":"9 Spread Y-Over","pos":{"X":[10,0],"Y":[33,0],"C":[50.5,0],"Z":[84,0],"Q":[50,-5]},"lines":[{"p":"X","pts":[[10,0],[10,8],[23,10.4]],"d":0,"e":"o"},{"p":"Y","pts":[[33,0],[32.5,5],[44,8],[69,8.1]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[75.5,3.7],[40,3.9]],"d":0,"e":"a"},{"p":"Z","pts":[[84,0],[91.3,2.8],[91.3,10.4]],"d":0,"e":"a"}]},{"n":"10","name":"10 Spread Sauber","pos":{"X":[10,0],"Y":[33,0],"C":[50.5,0],"Z":[89,0],"Q":[50,-5]},"lines":[{"p":"X","pts":[[10,0],[10,4.1],[46.5,4.2]],"d":0,"e":"a"},{"p":"Y","pts":[[33,0],[32.5,7.9],[84,8]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[54,2.5],[54,9.3]],"d":0,"e":"n"},{"p":"C","pts":[[54,9.3],[42,11.4]],"d":0,"e":"o"},{"p":"C","pts":[[54,9.3],[65,11.2]],"d":0,"e":"n"},{"p":"Z","pts":[[89,0],[92,4],[93,10.7]],"d":0,"e":"a"}]},{"n":"11","name":"11 Spread Dagger","pos":{"X":[10,0],"Y":[33.07325824938322,0],"C":[50.5,0],"Z":[90.5,0.01740010579427087],"Q":[50,-5]},"lines":[{"p":"X","pts":[[10,0],[10.073200694301672,15.004592895507812],[54.02930008737664,14.98719342549642]],"d":0,"e":"a"},{"p":"Y","pts":[[33.07325824938322,0],[40.57325824938322,5],[40.18312956157484,16.93591372172038]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[50,4.9],[22,5]],"d":0,"e":"a"},{"p":"Z","pts":[[90.5,0.01740010579427087],[89.63375693873355,16.605327288309734]],"d":0,"e":"a"}]},{"n":"12","name":"12 Spread Bubble","pos":{"X":[10,0],"Y":[31,0],"C":[53,0],"Z":[91,0],"Q":[50,-4.3]},"lines":[{"p":"X","pts":[[10,0],[10,9.4]],"d":0,"e":"a"},{"p":"Y","pts":[[31,0],[27,-2.2],[16,-3.6],[8,-2.5],[8.5,-0.5]],"d":0,"e":"a"},{"p":"C","pts":[[53,0],[74.5,1.5]],"d":0,"e":"o"},{"p":"Z","pts":[[91,0],[61,4.6]],"d":0,"e":"o"}]},{"n":"13","name":"13 Spread Jet","pos":{"X":[10,0],"Y":[29,-1.4],"C":[50.5,0],"Z":[88,0],"Q":[50,-6.4]},"lines":[{"p":"X","pts":[[10,0],[10,6.7],[30,10.8]],"d":0,"e":"a"},{"p":"Y","pts":[[29,-1.4],[40,-4.6],[62,-4.5],[80,-0.8]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[51,6.6],[22.5,6.8]],"d":0,"e":"a"},{"p":"Z","pts":[[88,0],[95.5,2],[95.5,9.6]],"d":0,"e":"a"},{"p":"Q","pts":[[50,-6.4],[71,-6.4]],"d":0,"e":"a"}]},{"n":"14","name":"14 Spread Airplane","pos":{"X":[10,0],"Y":[29,-1.5],"C":[50.5,0],"Z":[88,0],"Q":[50,-6.3]},"lines":[{"p":"X","pts":[[10,0],[10,6.6],[29,10.9]],"d":0,"e":"a"},{"p":"Y","pts":[[29,-1.5],[39,-4.4],[82,-4.3]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[50,4.9],[37,8.2]],"d":0,"e":"a"},{"p":"Z","pts":[[88,0],[71.5,3.8],[24,4]],"d":0,"e":"a"},{"p":"Q","pts":[[50,-6.3],[10,-6.3]],"d":0,"e":"a"}]},{"n":"15","name":"15 Spread Stack XOXO","pos":{"X":[20,-2.4],"Y":[26,0],"C":[50.5,0],"Z":[90.5,0],"Q":[50,-5.4]},"lines":[{"p":"X","pts":[[20,-2.4],[20.5,7.1]],"d":0,"e":"o"},{"p":"Y","pts":[[26,0],[44,4.8],[82.5,4.9]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[12,2.9]],"d":0,"e":"a"},{"p":"Z","pts":[[90.5,0],[91.5,8.5],[58,8.6]],"d":0,"e":"a"}]},{"n":"16","name":"16 Spread Wheely","pos":{"X":[21.5,0],"Y":[72,0],"C":[48,0],"Z":[91,0],"Q":[48,-4.5]},"lines":[{"p":"X","pts":[[21.5,0],[21.5,6.4],[44,11.6]],"d":0,"e":"a"},{"p":"C","pts":[[48,0],[48,2.9],[24.5,3]],"d":0,"e":"a"},{"p":"Y","pts":[[72,0],[55,-2.3],[27,-2.4],[14,-1],[13,3],[13,7.7]],"d":0,"e":"a"},{"p":"Z","pts":[[91,0],[91,7.3],[59,7.4]],"d":0,"e":"a"}]},{"n":"17","name":"17 Tight Flood","pos":{"X":[31,0],"Y":[41,0],"C":[50.5,0],"Z":[60.5,0],"Q":[50,-5.5]},"lines":[{"p":"X","pts":[[31,0],[31.3,5.6],[40,10.9]],"d":0,"e":"n"},{"p":"X","pts":[[31.3,5.6],[13,10]],"d":1,"e":"a"},{"p":"Y","pts":[[41,0],[41,4.4],[15,4.5]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[51,7.3],[16,7.4]],"d":0,"e":"a"},{"p":"Z","pts":[[60.5,0],[61,5.6],[81,9.7]],"d":0,"e":"n"},{"p":"Z","pts":[[72,7.4],[93,7.3]],"d":1,"e":"a"}]},{"n":"18","name":"18 Tight Stick","pos":{"X":[41,0],"Y":[60.5,0],"C":[50.5,0],"Z":[70,0],"Q":[50,-5.5]},"lines":[{"p":"X","pts":[[41,0],[40,6.4],[55,10.6]],"d":0,"e":"n"},{"p":"X","pts":[[40,6.4],[29,8.6]],"d":1,"e":"a"},{"p":"C","pts":[[50.5,0],[50.5,2.4],[89,2.5]],"d":0,"e":"a"},{"p":"Y","pts":[[60.5,0],[61,4.9]],"d":0,"e":"n"},{"p":"Y","pts":[[61,4.9],[65.5,3.8]],"d":0,"e":"a"},{"p":"Z","pts":[[70,0],[70,5.1],[90.5,9.3]],"d":0,"e":"a"}]},{"n":"19","name":"19 Tight Z-Shallow","pos":{"X":[31,0],"Y":[41,0],"C":[50.5,0],"Z":[60.5,0],"Q":[50,-5.5]},"lines":[{"p":"X","pts":[[31,0],[31,6],[10.5,10.3]],"d":0,"e":"a"},{"p":"Y","pts":[[41,0],[40.5,10.2]],"d":0,"e":"n"},{"p":"Y","pts":[[40.5,8],[45.5,7]],"d":1,"e":"a"},{"p":"C","pts":[[50.5,0],[51,6.1],[75,10.7]],"d":0,"e":"a"},{"p":"Z","pts":[[60.5,0],[60,4],[13,4.1]],"d":0,"e":"n"},{"p":"Z","pts":[[60,4],[93,4]],"d":1,"e":"a"}]},{"n":"20","name":"20 Spread Juke","pos":{"X":[10,0],"Y":[30.073258249383223,0.017397562662760435],"C":[50.42674175061677,0.03479766845703125],"Z":[91,0.017400105794270832],"Q":[50,-5.5]},"lines":[{"p":"X","pts":[[10,0],[10,9.6],[32,9.7]],"d":0,"e":"a"},{"p":"Y","pts":[[30.073258249383223,0.017397562662760435],[28.461504484477796,5.104396820068359],[28.53476273386102,5.104396820068359]],"d":0,"e":"a"},{"p":"C","pts":[[50.42674175061677,0.03479766845703125],[49.92674175061677,3.6347976684570313],[57.912094383908986,3.729852040608724],[57.912094383908986,6.009159088134766],[97.76563142475328,15.004592895507812]],"d":0,"e":"a"},{"p":"Z","pts":[[91,0.017400105794270832],[52.78388307805647,4.043038686116536],[60.10990075897752,5.278388977050781],[92,6.0174001057942705]],"d":0,"e":"a"}]},{"n":"21","name":"21 Spread Y-Cross","pos":{"X":[10,0],"Y":[31,0],"C":[50.5,0],"Z":[91,0],"Q":[50,-5]},"lines":[{"p":"X","pts":[[10,0],[10,8.4],[62,8.5]],"d":0,"e":"a"},{"p":"Y","pts":[[31,0],[31,3],[93,8.2]],"d":0,"e":"a"},{"p":"C","pts":[[50.5,0],[77,2.2]],"d":0,"e":"a"},{"p":"Z","pts":[[91,0],[85.5,3.7],[46,3.9]],"d":0,"e":"a"}]},{"n":"22","name":"22 Spread Stick","pos":{"X":[10,0],"Y":[31.219780102110747,0.06959533691406251],"C":[50,-2.6],"Z":[91,0],"Q":[50,-6.3]},"lines":[{"p":"X","pts":[[10,0],[10,5.9],[49,10.3]],"d":0,"e":"a"},{"p":"Y","pts":[[31.219780102110747,0.06959533691406251],[31.09886838678728,6.496339162190755]],"d":0,"e":"a"},{"p":"Y","pts":[[31.09886838678728,6.478940327962239],[35.567739386307565,5.504578908284505]],"d":0,"e":"a"},{"p":"C","pts":[[50,-2.6],[5.4578098497892675,-1.0027567545572917]],"d":0,"e":"a"},{"p":"Z","pts":[[91,0],[73,0.2],[69,4],[84,4.3]],"d":0,"e":"a"}]},{"n":"23","name":"23 Trio Burger","pos":{"X":[27,-3.1],"Y":[15,0],"C":[57,0],"Z":[37,0],"Q":[50,-6.3]},"lines":[{"p":"Y","pts":[[15,0],[15,10.4]],"d":0,"e":"n"},{"p":"Y","pts":[[15,10.4],[21,8.9]],"d":0,"e":"n"},{"p":"Y","pts":[[15,10.4],[50,10.5]],"d":1,"e":"a"},{"p":"Z","pts":[[37,0],[37,6.7],[21,6.8]],"d":0,"e":"a"},{"p":"C","pts":[[57,0],[57,4.9],[91,5]],"d":0,"e":"n"},{"p":"C","pts":[[57,4.9],[90,9.2]],"d":1,"e":"a"},{"p":"X","pts":[[27,-3.1],[8.5,-1.9],[8.5,4.4]],"d":0,"e":"n"},{"p":"X","pts":[[8.5,4.4],[36,4.5]],"d":1,"e":"a"}]},{"n":"24","name":"24 Trio double double","pos":{"X":[23.5,-3],"Y":[15,0],"C":[57.5,0],"Z":[35,0],"Q":[57,-5]},"lines":[{"p":"Y","pts":[[15,0],[24,3.9],[24,7.6],[44,7.7]],"d":0,"e":"n"},{"p":"Y","pts":[[24,7.6],[10,7.7]],"d":1,"e":"a"},{"p":"X","pts":[[23.5,-3],[23.5,3.7],[57,3.8]],"d":0,"e":"n"},{"p":"X","pts":[[23.5,3.7],[10,3.8]],"d":1,"e":"a"},{"p":"Z","pts":[[35,0],[93,4]],"d":0,"e":"a"},{"p":"C","pts":[[57.5,0],[57.5,5.1],[92,9.6]],"d":0,"e":"a"}]}];
+const DEFAULT_CATS = [
+  {id:1, n:'Pass',    c:'#1e88e5'},
+  {id:2, n:'Run',     c:'#43a047'},
+  {id:3, n:'Redzone', c:'#e53935'},
+  {id:4, n:'Trick',   c:'#8e24aa'}
+];
+/* Demo-Playbook: zeigt alle Funktionen (Motion, Linienstile, Abzweige, Kategorien,
+   Tags, Notizen, Play-Texte, Ballpositionen inkl. Endzonen, gepinnte Defense) */
+const DEFAULT_PLAYS = [
+{n:'1', name:'Four Verts', los:5, cat:1, tags:'Deep, 2-Minute',
+ note:'Alle vier vertikal. QB-Read: Safeties - gegen 2-Deep innen werfen, gegen 3-Deep die Aussenreceiver.',
+ texts:[{x:50,y:17,t:'SAFETY LESEN'}],
+ pos:{X:[10,0],Y:[33,0],C:[50.5,0],Z:[91,0],Q:[50,-5]},
+ lines:[
+  {p:'X',pts:[[10,0],[10,15]],d:0,e:'a'},
+  {p:'Y',pts:[[33,0],[37,14]],d:0,e:'a'},
+  {p:'C',pts:[[50.5,0],[56,13]],d:0,e:'a'},
+  {p:'Z',pts:[[91,0],[91,15]],d:0,e:'a'}]},
+{n:'2', name:'Smash', los:5, cat:1, tags:'3rd & Long, Cover 2 Beater',
+ note:'Smash beidseitig: Corner gegen Cover 2, Hitch gegen Cover 3. Gestrichelt = Post-Option, wenn die Mitte offen ist.',
+ pos:{X:[10,0],Y:[28,0],C:[72,0],Z:[91,0],Q:[50,-5]},
+ lines:[
+  {p:'X',pts:[[10,0],[10,5]],d:0,e:'a'},
+  {p:'Y',pts:[[28,0],[28,8],[12,14]],d:0,e:'a'},
+  {p:'Y',pts:[[28,8],[42,14]],d:1,e:'a',s:'dash'},
+  {p:'C',pts:[[72,0],[72,8],[90,14]],d:0,e:'a'},
+  {p:'Z',pts:[[91,0],[91,5]],d:0,e:'a'}]},
+{n:'3', name:'Z Jet Sweep', los:5, cat:4, tags:'Motion, Trick',
+ note:'Z kommt mit voller Geschwindigkeit in Jet-Motion (gewellte Linie), Snap sobald er hinter dem QB ist. Punkte = Blocks halten.',
+ texts:[{x:18,y:2.5,t:'BLOCKS HALTEN'}],
+ pos:{X:[10,0],Y:[33,0],C:[50.5,0],Z:[91,0],Q:[50,-5]},
+ lines:[
+  {p:'Z',pts:[[91,0],[60,-2]],d:0,e:'n',s:'wave'},
+  {p:'Z',pts:[[60,-2],[30,-2.5],[8,4],[6,9]],d:0,e:'a'},
+  {p:'Q',pts:[[50,-5],[57,-2.5]],d:0,e:'n',s:'dot'},
+  {p:'X',pts:[[10,0],[12,3]],d:0,e:'o'},
+  {p:'Y',pts:[[33,0],[35,3]],d:0,e:'o'},
+  {p:'C',pts:[[50.5,0],[52,2.5]],d:0,e:'o'}]},
+{n:'4', name:'Bubble Screen', los:5, cat:1, tags:'Quick, Screen',
+ note:'Sofort werfen (gepunktete Linie = Passweg). X blockt den Corner, die tiefen Routen raeumen die Zone.',
+ texts:[{x:22,y:-0.5,t:'SOFORT'}],
+ pos:{X:[10,0],Y:[30,0],C:[50.5,0],Z:[91,0],Q:[50,-5]},
+ lines:[
+  {p:'Y',pts:[[30,0],[24,-2],[16,-1.5]],d:0,e:'a'},
+  {p:'Q',pts:[[50,-5],[20,-1]],d:0,e:'a',s:'dot'},
+  {p:'X',pts:[[10,0],[11,3]],d:0,e:'o'},
+  {p:'C',pts:[[50.5,0],[53,12]],d:0,e:'a'},
+  {p:'Z',pts:[[91,0],[91,12]],d:0,e:'a'}]},
+{n:'5', name:'Trips Flood', los:10, cat:1, tags:'Cover 3 Beater, 3rd & Long',
+ note:'Flood rechts in drei Ebenen gegen Zone - die Defense ist bei diesem Play als Cover 3 gepinnt (Pin-Symbol). Read: tief, mittel, flat.',
+ pos:{X:[10,0],C:[45,0],Y:[62,0],Z:[80,0],Q:[50,-5]},
+ lines:[
+  {p:'Z',pts:[[80,0],[84,15]],d:0,e:'a'},
+  {p:'Y',pts:[[62,0],[64,9],[95,10]],d:0,e:'a'},
+  {p:'C',pts:[[45,0],[60,1.5],[88,2]],d:0,e:'a'},
+  {p:'X',pts:[[10,0],[30,3],[70,4]],d:0,e:'a'}],
+ defOverride:{preset:'c3', zones:true, v:3, players:[
+  {l:'R',x:50,y:1.5,z:null},{l:'LB',x:50,y:5,z:[12,2.6]},
+  {l:'CB',x:18,y:12,z:[12,3.4]},{l:'S',x:50,y:14,z:[12,3.4]},{l:'CB',x:82,y:12,z:[12,3.4]}]}},
+{n:'6', name:'Redzone Fades', los:45, cat:3, tags:'Redzone',
+ note:'Ball auf der gegnerischen 5 (Ballposition oben einstellbar). Fades nur bei 1-gegen-1 aussen - sonst Slant zu Y.',
+ texts:[{x:50,y:8,t:'ENDZONE-ECKEN'}],
+ pos:{X:[10,0],Y:[33,0],C:[50.5,0],Z:[91,0],Q:[50,-5]},
+ lines:[
+  {p:'X',pts:[[10,0],[4,8]],d:0,e:'a'},
+  {p:'Z',pts:[[91,0],[97,8]],d:0,e:'a'},
+  {p:'Y',pts:[[33,0],[46,4]],d:0,e:'a'},
+  {p:'C',pts:[[50.5,0],[52,3]],d:0,e:'o'}]},
+{n:'7', name:'QB Power', los:25, cat:2, tags:'4th & Short',
+ note:'4th & 1 an der Mittellinie: QB folgt dem Center. Y motioniert eng heran und blockt, aussen sind nur Ablenkung (gestrichelt).',
+ texts:[{x:52,y:5,t:'NUR 1 YARD'}],
+ pos:{X:[10,0],Y:[33,0],C:[50.5,0],Z:[91,0],Q:[50,-5]},
+ lines:[
+  {p:'Y',pts:[[33,0],[45,-1]],d:0,e:'n',s:'wave'},
+  {p:'Y',pts:[[45,-1],[48,1]],d:0,e:'o'},
+  {p:'C',pts:[[50.5,0],[51,2]],d:0,e:'o'},
+  {p:'Q',pts:[[50,-5],[52,3]],d:0,e:'a'},
+  {p:'X',pts:[[10,0],[6,4]],d:1,e:'a',s:'dash'},
+  {p:'Z',pts:[[91,0],[95,4]],d:1,e:'a',s:'dash'}]},
+{n:'8', name:'Reverse', los:10, cat:4, tags:'Trick',
+ note:'Y startet den Sweep nach rechts, X kommt dagegen und nimmt den Reverse. Geduld - erst nach dem Handoff beschleunigen.',
+ texts:[{x:58,y:-2,t:'HANDOFF'}],
+ pos:{X:[10,0],Y:[33,0],C:[50.5,0],Z:[91,0],Q:[50,-5]},
+ lines:[
+  {p:'Y',pts:[[33,0],[43,-3],[62,-3.5]],d:0,e:'n'},
+  {p:'X',pts:[[10,0],[22,-4.5],[70,-4],[90,1],[94,8]],d:0,e:'a'},
+  {p:'Q',pts:[[50,-5],[56,-3.5]],d:0,e:'n',s:'dot'},
+  {p:'C',pts:[[50.5,0],[52,2.5]],d:0,e:'o'},
+  {p:'Z',pts:[[91,0],[88,3]],d:0,e:'o'}]},
+{n:'9', name:'Goalline Rub', los:48, cat:3, tags:'Redzone, Goalline',
+ note:'Gegnerische 2: X schneidet hart nach innen und legt den Pick, Y laeuft flach darunter in die Endzone.',
+ texts:[{x:20,y:1.5,t:'RUB'}],
+ pos:{X:[10,0],Y:[33,0],C:[50.5,0],Z:[91,0],Q:[50,-5]},
+ lines:[
+  {p:'X',pts:[[10,0],[30,3]],d:0,e:'a'},
+  {p:'Y',pts:[[33,0],[20,1],[6,1.5]],d:0,e:'a'},
+  {p:'Z',pts:[[91,0],[96,6]],d:0,e:'a'},
+  {p:'C',pts:[[50.5,0],[50,2]],d:0,e:'o'}]},
+{n:'10', name:'Coming Out Hitches', los:3, cat:1, tags:'Coming Out',
+ note:'Eigene 3-Yard-Linie - der QB steht in der Endzone. Kein Risiko: schnelle Hitches, Ball sichern.',
+ texts:[{x:50,y:-8,t:'BALL SICHERN'}],
+ pos:{X:[10,0],Y:[33,0],C:[50.5,0],Z:[91,0],Q:[50,-4]},
+ lines:[
+  {p:'X',pts:[[10,0],[10,5]],d:0,e:'a'},
+  {p:'Y',pts:[[33,0],[34,5]],d:0,e:'a'},
+  {p:'C',pts:[[50.5,0],[51,4]],d:0,e:'a'},
+  {p:'Z',pts:[[91,0],[91,5]],d:0,e:'a'}]}
+];
 
 /* ================= Defense-Presets (immer mit Rusher R) ================= */
 /* Labels: R = Rusher, CB = Corner, LB = Linebacker, S = Safety */
@@ -739,7 +851,7 @@ const LS_KEY = 'rhinosPlaybook_v1';
 function freshSlot(name){
   return {name, plays: JSON.parse(JSON.stringify(DEFAULT_PLAYS)),
     def:{preset:'off', players:[], zones:true, v:DEF_V}, cur:0,
-    labels:{X:'X',Y:'Y',C:'C',Z:'Z',Q:'Q'}, cats:[]};
+    labels:{X:'X',Y:'Y',C:'C',Z:'Z',Q:'Q'}, cats: JSON.parse(JSON.stringify(DEFAULT_CATS))};
 }
 function LBL(pid){ return (SLOT().labels && SLOT().labels[pid]) || pid; }
 let state = {
@@ -825,6 +937,18 @@ function snapPt(p){
 
 /* ================= Feld-Geometrie ================= */
 const W=600, H=760;
+/* Zoom/Pan-Zustand des Feldes (Pinch auf Touch, Mausrad am Desktop) */
+let view = {x:0, y:0, w:W, h:H};
+const ptrs = new Map();      // aktive Pointer für Pinch-Erkennung
+let pinch = null;
+const TOUCH_OFF = 35;        // Finger-Offset in px: Punkt greift oberhalb des Fingers
+function clampView(){
+  if(view.w>=W) view.x=(W-view.w)/2;
+  else view.x=Math.max(-W*0.05, Math.min(W*1.05-view.w, view.x));
+  if(view.h>=H) view.y=(H-view.h)/2;
+  else view.y=Math.max(-H*0.05, Math.min(H*1.05-view.h, view.y));
+}
+function applyView(svg){ svg.setAttribute('viewBox', `${view.x} ${view.y} ${view.w} ${view.h}`); }
 const FX = x => 15 + x*5.7;
 const FY = y => 500 - y*24;
 const IX = px => (px-15)/5.7;
@@ -888,7 +1012,7 @@ function arrowHead(a,b,color,s=11){
 
 function render(){
   const play = SLOT().plays[SLOT().cur];
-  let s = `<svg id="field" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  let s = `<svg id="field" viewBox="${view.x} ${view.y} ${view.w} ${view.h}" xmlns="http://www.w3.org/2000/svg">`;
   // Feld
   s += `<rect width="${W}" height="${H}" fill="#f4f6f3"/>`;
   s += `<rect width="${W}" height="${H}" fill="none" stroke="#c9d2c9" stroke-width="2"/>`;
@@ -956,12 +1080,15 @@ function render(){
     else
       s += `<circle data-op="${pid}" cx="${cx}" cy="${cy}" r="14" fill="${col}" ${ring} style="cursor:grab"/>`;
     s += `<text x="${cx}" y="${cy+ldy}" font-size="${lfs}" font-weight="bold" fill="#fff" text-anchor="middle" pointer-events="none">${esc(lb)}</text>`;
+    s += `<circle data-op="${pid}" cx="${cx}" cy="${cy}" r="26" fill="transparent" style="cursor:grab"/>`;
   }
 
   // ---- Play-Texte ----
   (play.texts||[]).forEach((tx,txi)=>{
     s += `<text data-tx="${txi}" x="${FX(tx.x)}" y="${FY(tx.y)}" font-size="15" font-weight="600" fill="#333"
       text-anchor="middle" stroke="#fff" stroke-width="3" style="paint-order:stroke;cursor:${state.mode==='edit'?'grab':'default'}">${esc(tx.t)}</text>`;
+    if(state.mode==='edit')
+      s += `<circle data-tx="${txi}" cx="${FX(tx.x)}" cy="${FY(tx.y)}" r="24" fill="transparent" style="cursor:grab"/>`;
   });
 
   // ---- Editor-Handles ----
@@ -970,8 +1097,9 @@ function render(){
       if(ln.p!==state.selP) return;
       ln.pts.forEach((p,pi)=>{
         const hSel = state.selH && state.selH.li===li && state.selH.pi===pi;
-        s += `<circle data-h="${li}:${pi}" cx="${FX(p[0])}" cy="${FY(p[1])}" r="9"
+        s += `<circle data-h="${li}:${pi}" cx="${FX(p[0])}" cy="${FY(p[1])}" r="10"
           fill="${hSel?'#ffb300':'#fff'}" stroke="#1668c9" stroke-width="3" style="cursor:grab"/>`;
+        s += `<circle data-h="${li}:${pi}" cx="${FX(p[0])}" cy="${FY(p[1])}" r="24" fill="transparent" style="cursor:grab"/>`;
       });
     });
   }
@@ -984,7 +1112,8 @@ function render(){
       const dSel = state.mode==='edit' && state.selD===di;
       s += `<g data-dp="${di}" style="cursor:grab">
         <rect x="${cx-13}" y="${cy-13}" width="26" height="26" rx="4" fill="#c62828" stroke="${dSel?'#1668c9':'#fff'}" stroke-width="${dSel?4:2.5}" transform="rotate(45 ${cx} ${cy})"/>
-        <text x="${cx}" y="${cy+dy}" font-size="${fs}" font-weight="bold" fill="#fff" text-anchor="middle" pointer-events="none">${esc(d.l)}</text></g>`;
+        <text x="${cx}" y="${cy+dy}" font-size="${fs}" font-weight="bold" fill="#fff" text-anchor="middle" pointer-events="none">${esc(d.l)}</text>
+        <circle cx="${cx}" cy="${cy}" r="26" fill="transparent"/></g>`;
     });
   }
 
@@ -1202,17 +1331,30 @@ function lineIndexOfSel(){
 
 /* ================= Pointer-Interaktion ================= */
 let drag = null;
-function svgPoint(ev){
+function svgPoint(ev, offY){
   const svg = document.getElementById('field');
-  const pt = svg.createSVGPoint(); pt.x=ev.clientX; pt.y=ev.clientY;
+  const pt = svg.createSVGPoint(); pt.x=ev.clientX; pt.y=ev.clientY-(offY||0);
   const p = pt.matrixTransform(svg.getScreenCTM().inverse());
   return [Math.max(0,Math.min(100,IX(p.x))), Math.max(-10.5,Math.min(20,IY(p.y)))];
 }
 function bindField(){
   const svg = document.getElementById('field');
   svg.onpointerdown = ev=>{
+    ptrs.set(ev.pointerId, [ev.clientX, ev.clientY]);
+    try{ svg.setPointerCapture(ev.pointerId); }catch(e){}
+    if(ptrs.size===2){                                             // Pinch-Start
+      drag = null;
+      const [a,b] = [...ptrs.values()];
+      pinch = { d: Math.hypot(a[0]-b[0],a[1]-b[1]) || 1,
+                mid: [(a[0]+b[0])/2, (a[1]+b[1])/2],
+                v: {x:view.x, y:view.y, w:view.w, h:view.h} };
+      ev.preventDefault();
+      return;
+    }
+    if(ptrs.size>1) return;
     const t = ev.target;
     const play = SLOT().plays[SLOT().cur];
+    const off = ev.pointerType==='touch' ? TOUCH_OFF : 0;
     if(t.dataset.h && state.mode==='edit'){                       // Routen-Handle
       const [li,pi] = t.dataset.h.split(':').map(Number);
       state.selH = {li,pi};
@@ -1221,7 +1363,7 @@ function bindField(){
       const pid = t.dataset.op;
       if(state.mode==='edit'){
         if(state.selP!==pid){ state.selP=pid; state.selH=null; state.selD=null; }
-        drag = {type:'o', pid, start:svgPoint(ev), pos0:play.pos[pid].slice(),
+        drag = {type:'o', pid, start:svgPoint(ev,off), pos0:play.pos[pid].slice(),
                 lines0: play.lines.map(l=> l.p===pid ? l.pts.map(p=>p.slice()) : null)};
       }
     } else if(t.dataset.tx!=null && state.mode==='edit'){          // Play-Text
@@ -1230,16 +1372,41 @@ function bindField(){
       const di = +t.closest('[data-dp]').dataset.dp;
       if(state.mode==='edit'){ state.selD=di; state.selP=null; state.selH=null; }
       drag = {type:'d', di};
-    } else {
+    } else {                                                       // leere Fläche: Pan
       if(state.mode==='edit'){ state.selP=null; state.selH=null; state.selD=null; }
-      drag = null;
+      drag = {type:'pan', sx:ev.clientX, sy:ev.clientY, v0:{x:view.x, y:view.y}};
     }
-    if(drag){ pushUndo(); svg.setPointerCapture(ev.pointerId); ev.preventDefault(); }
+    if(drag){ if(drag.type!=='pan') pushUndo(); ev.preventDefault(); }
     render();
   };
   svg.onpointermove = ev=>{
+    if(ptrs.has(ev.pointerId)) ptrs.set(ev.pointerId, [ev.clientX, ev.clientY]);
+    if(pinch && ptrs.size>=2){                                     // Pinch-Zoom/Pan
+      const [a,b] = [...ptrs.values()];
+      const d = Math.hypot(a[0]-b[0], a[1]-b[1]) || 1;
+      let w = pinch.v.w * pinch.d / d;
+      w = Math.min(W*1.3, Math.max(W/4, w));
+      const h = w * H / W;
+      const rect = svg.getBoundingClientRect();
+      const fx = pinch.v.x + (pinch.mid[0]-rect.left)/rect.width  * pinch.v.w;
+      const fy = pinch.v.y + (pinch.mid[1]-rect.top) /rect.height * pinch.v.h;
+      const mid = [(a[0]+b[0])/2, (a[1]+b[1])/2];
+      view.w = w; view.h = h;
+      view.x = fx - (mid[0]-rect.left)/rect.width  * w;
+      view.y = fy - (mid[1]-rect.top) /rect.height * h;
+      clampView(); applyView(svg);
+      return;
+    }
     if(!drag) return;
-    const p = svgPoint(ev);
+    if(drag.type==='pan'){
+      const rect = svg.getBoundingClientRect();
+      view.x = drag.v0.x - (ev.clientX-drag.sx) * view.w/rect.width;
+      view.y = drag.v0.y - (ev.clientY-drag.sy) * view.h/rect.height;
+      clampView(); applyView(svg);
+      return;
+    }
+    const off = ev.pointerType==='touch' ? TOUCH_OFF : 0;
+    const p = svgPoint(ev, off);
     const play = SLOT().plays[SLOT().cur];
     if(drag.type==='h'){
       play.lines[drag.li].pts[drag.pi] = snapPt(p);
@@ -1262,8 +1429,11 @@ function bindField(){
     }
     requestRender();
   };
-  svg.onpointerup = svg.onpointercancel = ()=>{
+  svg.onpointerup = svg.onpointercancel = ev=>{
+    ptrs.delete(ev.pointerId);
+    if(ptrs.size<2) pinch = null;
     if(!drag) return;
+    if(drag.type==='pan'){ drag=null; return; }
     if(drag.type==='t' && !drag.moved){
       const play = SLOT().plays[SLOT().cur];
       const tx = play.texts && play.texts[drag.ti];
@@ -1277,6 +1447,24 @@ function bindField(){
       }
     }
     drag = null; save();
+  };
+  svg.onwheel = ev=>{                                              // Desktop: Mausrad-Zoom
+    ev.preventDefault();
+    const rect = svg.getBoundingClientRect();
+    const f = ev.deltaY>0 ? 1.12 : 0.89;
+    const w = Math.min(W*1.3, Math.max(W/4, view.w*f));
+    if(w===view.w) return;
+    const h = w * H / W;
+    const fx = view.x + (ev.clientX-rect.left)/rect.width  * view.w;
+    const fy = view.y + (ev.clientY-rect.top) /rect.height * view.h;
+    view.x = fx - (ev.clientX-rect.left)/rect.width  * w;
+    view.y = fy - (ev.clientY-rect.top) /rect.height * h;
+    view.w = w; view.h = h;
+    clampView(); applyView(svg);
+  };
+  svg.ondblclick = ()=>{                                           // Doppelklick/-tipp: Ansicht zurücksetzen
+    view = {x:0, y:0, w:W, h:H};
+    applyView(svg);
   };
 }
 let rafPending=false;
@@ -1425,6 +1613,7 @@ document.getElementById('btnReset').onclick = ()=>{
   if(!confirm(T('resetQ'))) return;
   pushUndo();
   SLOT().plays = JSON.parse(JSON.stringify(DEFAULT_PLAYS));
+  if(!SLOT().cats || !SLOT().cats.length) SLOT().cats = JSON.parse(JSON.stringify(DEFAULT_CATS));
   SLOT().cur=0; state.selP=null; state.selH=null; state.selD=null; render(); save();
 };
 
@@ -1846,6 +2035,7 @@ de: `
 
 <h4>Plays bearbeiten</h4>
 <p><span class="k">✏️ Bearbeiten</span> aktivieren, dann Spieler antippen – alle Routenpunkte werden sichtbar. Spieler und Punkte einfach ziehen. Ein Punkt wird durch Antippen ausgewählt (orange).</p>
+<p><b>Touch & Zoom:</b> Mit zwei Fingern zoomen, leere Feldflächen ziehen zum Verschieben, Doppeltipp setzt die Ansicht zurück (am Desktop zoomt das Mausrad). Beim Ziehen auf Touch greift der Punkt leicht oberhalb des Fingers, damit er sichtbar bleibt.</p>
 <p><span class="k">+ Punkt</span> fügt nach dem gewählten Punkt einen Zwischenpunkt ein. <span class="k">+ Abzweig</span> startet eine neue Linie am gewählten Punkt – so entstehen Options-Routen. Für die Linie der Auswahl gibt es vier Stile – durchgezogen (Route), gestrichelt (Option), gepunktet (Pass/Pitch) und gewellt (Motion/Shift) – sowie das Linienende (Pfeil/Punkt/offen).</p>
 <p><span class="k">↶</span>/<span class="k">↷</span> = Rückgängig/Wiederholen (auch Strg+Z / Strg+Y). <span class="k">🧲</span> rastet Punkte auf halbe Yards ein. <span class="k">⇋</span> (Sidebar unten) spiegelt das Play links/rechts.</p>
 <p>Im Feld <span class="k">Name:</span> lässt sich die Bezeichnung des ausgewählten Spielers ändern (max. 3 Zeichen) – Offense-Namen gelten für den ganzen Slot, Defense-Namen pro Verteidiger. Dazu im Bearbeiten-Modus den Spieler bzw. Verteidiger antippen.</p>
@@ -1894,6 +2084,7 @@ en: `
 
 <h4>Editing plays</h4>
 <p>Enable <span class="k">✏️ Edit</span>, then tap a player – all route points appear. Drag players and points. Tap a point to select it (orange).</p>
+<p><b>Touch & zoom:</b> pinch with two fingers to zoom, drag empty field areas to pan, double-tap resets the view (mouse wheel zooms on desktop). While dragging on touch, the point grabs slightly above your finger so it stays visible.</p>
 <p><span class="k">+ Point</span> inserts a point after the selected one. <span class="k">+ Branch</span> starts a new line at the selected point – that's how you build option routes. The selected line offers four styles – solid (route), dashed (option), dotted (pass/pitch) and wavy (motion/shift) – plus the line ending (arrow/dot/open).</p>
 <p><span class="k">↶</span>/<span class="k">↷</span> = undo/redo (also Ctrl+Z / Ctrl+Y). <span class="k">🧲</span> snaps points to half yards. <span class="k">⇋</span> (sidebar bottom) mirrors the play left/right.</p>
 <p>The <span class="k">Name:</span> field changes the label of the selected player (max. 3 characters) – offense labels apply to the whole slot, defense labels per defender. In edit mode, just tap the player or defender first.</p>
